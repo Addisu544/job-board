@@ -1,0 +1,117 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+
+
+enum UserRole {
+  ADMIN
+  RECRUITER
+  EMPLOYEE
+}
+
+enum UserStatus {
+  ACTIVE
+  BANNED
+}
+
+enum JobStatus {
+  OPEN
+  HIRED
+}
+
+enum ApplicationStatus {
+  DECLINED
+  SHORTLISTED
+  PASSED
+}
+
+
+
+model User {
+  id        String   @id @default(uuid())
+  fullName  String
+  email     String   @unique
+  password  String
+  role      UserRole
+  status    UserStatus @default(ACTIVE)
+  createdAt DateTime @default(now())
+
+  recruiterProfile RecruiterProfile?
+  employeeProfile  EmployeeProfile?
+}
+
+
+
+
+model RecruiterProfile {
+  id          String @id @default(uuid())
+  companyName String
+  companyWebsite String?
+  companyDescription String?
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+
+  jobs Job[]
+}
+
+
+
+model EmployeeProfile {
+  id         String @id @default(uuid())
+  resume     String?
+  skills     String?
+  experience String?
+  education  String?
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+
+  applications Application[]
+}
+
+
+
+model Job {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  location    String
+  jobType     String
+  status      JobStatus @default(OPEN)
+  createdAt   DateTime  @default(now())
+
+  recruiterId String
+  recruiter   RecruiterProfile @relation(fields: [recruiterId], references: [id])
+
+  applications Application[]
+}
+
+
+
+model Application {
+  id          String @id @default(uuid())
+  coverLetter String?
+  status      ApplicationStatus @default(SHORTLISTED)
+  appliedAt   DateTime @default(now())
+
+  jobId String
+  job   Job    @relation(fields: [jobId], references: [id])
+
+  employeeId String
+  employee   EmployeeProfile @relation(fields: [employeeId], references: [id])
+
+  @@unique([jobId, employeeId])
+}
