@@ -21,6 +21,12 @@ enum UserRole {
   EMPLOYEE
 }
 
+enum Role {
+  RECRUITER
+  EMPLOYEE
+}
+
+
 enum UserStatus {
   ACTIVE
   BANNED
