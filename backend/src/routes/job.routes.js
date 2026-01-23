@@ -7,6 +7,7 @@ import {
   getMyJobsController,
   updateJobStatusController,
 } from "../controllers/job.controller.js";
+import { getJobApplications } from "../controllers/application.controller.js";
 const router = express.Router();
 
 // // Example: only recruiters can create jobs
@@ -50,4 +51,10 @@ router.patch(
 // Public - list all jobs
 router.get("/", listJobsController);
 
+router.get(
+  "/:jobId/applications",
+  authenticate,
+  authorizeRoles("RECRUITER"),
+  getJobApplications,
+);
 export default router;

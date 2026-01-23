@@ -97,3 +97,66 @@ export const getMyApplications = async (req, res) => {
     });
   }
 };
+
+export const getJobApplications = async (req, res) => {
+  try {
+    const { jobId } = req.params;
+
+    const userId = req.user.id;
+
+    // 1️⃣ Get recruiter profile
+    const recruiterProfile = await prisma.recruiterProfile.findUnique({
+      where: { userId },
+    });
+
+    if (!recruiterProfile) {
+      return res.status(403).json({
+        message: "Recruiter profile not found",
+      });
+    }
+
+    // 2️⃣ Verify recruiter owns the job
+    const job = await prisma.job.findUnique({
+      where: { id: jobId },
+    });
+
+    if (!job || job.recruiterId !== recruiterProfile.id) {
+      return res.status(403).json({
+        message: "You are not authorized to view these applications",
+      });
+    }
+
+    // 3️⃣ Fetch applications
+    const applications = await prisma.application.findMany({
+      where: { jobId },
+      include: {
+        employee: {
+          select: {
+            id: true,
+            resume: true,
+            skills: true,
+            experience: true,
+            education: true,
+            user: {
+              select: {
+                fullName: true,
+                email: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: { appliedAt: "desc" },
+    });
+
+    res.status(200).json({
+      count: applications.length,
+      applications,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Failed to fetch job applications",
+      error: error.message,
+    });
+  }
+};
