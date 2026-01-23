@@ -53,3 +53,47 @@ export const applyForJobController = async (req, res) => {
     });
   }
 };
+
+export const getMyApplications = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // Get employee profile
+    const employeeProfile = await prisma.employeeProfile.findUnique({
+      where: { userId },
+    });
+
+    if (!employeeProfile) {
+      return res.status(404).json({
+        message: "Employee profile not found",
+      });
+    }
+
+    // Fetch applications
+    const applications = await prisma.application.findMany({
+      where: { employeeId: employeeProfile.id },
+      include: {
+        job: {
+          select: {
+            id: true,
+            title: true,
+            location: true,
+            jobType: true,
+            status: true,
+          },
+        },
+      },
+      orderBy: { appliedAt: "desc" },
+    });
+
+    res.status(200).json({
+      count: applications.length,
+      applications,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Failed to fetch applied jobs",
+      error: error.message,
+    });
+  }
+};
