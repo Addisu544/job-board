@@ -42,3 +42,23 @@ export const getAllJobs = async () => {
     },
   });
 };
+
+export const getJobsByRecruiter = async (recruiterProfileId) => {
+  return prisma.job.findMany({
+    where: {
+      recruiterId: recruiterProfileId,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    include: {
+      applications: {
+        select: {
+          id: true,
+          status: true,
+          appliedAt: true,
+        },
+      },
+    },
+  });
+};

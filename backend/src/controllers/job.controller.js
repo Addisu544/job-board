@@ -1,5 +1,9 @@
 import prisma from "../lib/prisma.js";
-import { createJob, getAllJobs } from "../services/job.service.js";
+import {
+  createJob,
+  getAllJobs,
+  getJobsByRecruiter,
+} from "../services/job.service.js";
 
 export const createJobController = async (req, res) => {
   const userId = req.user.id;
@@ -40,6 +44,29 @@ export const createJobController = async (req, res) => {
 
 export const listJobsController = async (req, res) => {
   const jobs = await getAllJobs();
+
+  res.status(200).json({
+    count: jobs.length,
+    jobs,
+  });
+};
+
+export const getMyJobsController = async (req, res) => {
+  const userId = req.user.id;
+
+  // 1️⃣ Find recruiter profile
+  const recruiterProfile = await prisma.recruiterProfile.findUnique({
+    where: { userId },
+  });
+
+  if (!recruiterProfile) {
+    return res.status(403).json({
+      message: "Recruiter profile not found",
+    });
+  }
+
+  // 2️⃣ Get jobs
+  const jobs = await getJobsByRecruiter(recruiterProfile.id);
 
   res.status(200).json({
     count: jobs.length,

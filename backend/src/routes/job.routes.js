@@ -4,6 +4,7 @@ import { authorizeRoles } from "../middleware/role.middleware.js";
 import {
   createJobController,
   listJobsController,
+  getMyJobsController,
 } from "../controllers/job.controller.js";
 const router = express.Router();
 
@@ -29,7 +30,15 @@ router.post(
   authorizeRoles("RECRUITER"),
   createJobController,
 );
+// Recruiter - view own jobs
+router.get(
+  "/me",
+  authenticate,
+  authorizeRoles("RECRUITER"),
+  getMyJobsController,
+);
 
+// Public - list all jobs
 router.get("/", listJobsController);
 
 export default router;
