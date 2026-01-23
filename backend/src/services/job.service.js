@@ -62,3 +62,15 @@ export const getJobsByRecruiter = async (recruiterProfileId) => {
     },
   });
 };
+
+export const updateJobStatus = async (jobId, recruiterProfileId) => {
+  return prisma.job.update({
+    where: {
+      id: jobId,
+      recruiterId: recruiterProfileId,
+    },
+    data: {
+      status: "HIRED",
+    },
+  });
+};

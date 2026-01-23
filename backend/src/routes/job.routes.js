@@ -5,6 +5,7 @@ import {
   createJobController,
   listJobsController,
   getMyJobsController,
+  updateJobStatusController,
 } from "../controllers/job.controller.js";
 const router = express.Router();
 
@@ -36,6 +37,14 @@ router.get(
   authenticate,
   authorizeRoles("RECRUITER"),
   getMyJobsController,
+);
+
+// Recruiter - mark job as hired
+router.patch(
+  "/:id/status",
+  authenticate,
+  authorizeRoles("RECRUITER"),
+  updateJobStatusController,
 );
 
 // Public - list all jobs
