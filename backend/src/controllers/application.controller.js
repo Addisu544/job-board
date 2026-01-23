@@ -160,3 +160,59 @@ export const getJobApplications = async (req, res) => {
     });
   }
 };
+
+export const updateApplicationStatusController = async (req, res) => {
+  const { jobId, applicationId } = req.params;
+  const { status } = req.body;
+  const userId = req.user.id;
+
+  // 1. Validate status
+  const allowedStatuses = ["DECLINED", "SHORTLISTED", "PASSED"];
+  if (!allowedStatuses.includes(status)) {
+    return res.status(400).json({ message: "Invalid status value" });
+  }
+
+  // 2. Get recruiter profile
+  const recruiterProfile = await prisma.recruiterProfile.findUnique({
+    where: { userId },
+  });
+
+  if (!recruiterProfile) {
+    return res.status(403).json({ message: "Recruiter profile not found" });
+  }
+
+  // 3. Verify job ownership
+  const job = await prisma.job.findFirst({
+    where: {
+      id: jobId,
+      recruiterId: recruiterProfile.id,
+    },
+  });
+
+  if (!job) {
+    return res.status(403).json({ message: "Not authorized for this job" });
+  }
+
+  // 4. Update application status
+  const updatedApplication = await prisma.application.update({
+    where: { id: applicationId },
+    data: { status },
+    include: {
+      employee: {
+        include: {
+          user: {
+            select: {
+              fullName: true,
+              email: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  res.json({
+    message: "Application status updated",
+    application: updatedApplication,
+  });
+};

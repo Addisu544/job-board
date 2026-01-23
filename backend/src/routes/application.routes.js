@@ -4,6 +4,7 @@ import { authorizeRoles } from "../middleware/role.middleware.js";
 import {
   applyForJobController,
   getMyApplications,
+  updateApplicationStatusController,
 } from "../controllers/application.controller.js";
 
 const router = express.Router();
@@ -22,6 +23,13 @@ router.get(
   authenticate,
   authorizeRoles("EMPLOYEE"),
   getMyApplications,
+);
+// Update application status
+router.patch(
+  "/jobs/:jobId/applications/:applicationId/status",
+  authenticate,
+  authorizeRoles("RECRUITER"),
+  updateApplicationStatusController,
 );
 
 export default router;
