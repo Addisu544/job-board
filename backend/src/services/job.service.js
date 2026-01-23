@@ -17,3 +17,28 @@ export const createJob = async ({
     },
   });
 };
+
+export const getAllJobs = async () => {
+  return prisma.job.findMany({
+    where: {
+      status: "OPEN",
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    include: {
+      recruiter: {
+        select: {
+          id: true,
+          companyName: true,
+          companyWebsite: true,
+          user: {
+            select: {
+              fullName: true,
+            },
+          },
+        },
+      },
+    },
+  });
+};

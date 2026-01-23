@@ -1,5 +1,5 @@
 import prisma from "../lib/prisma.js";
-import { createJob } from "../services/job.service.js";
+import { createJob, getAllJobs } from "../services/job.service.js";
 
 export const createJobController = async (req, res) => {
   const userId = req.user.id;
@@ -35,5 +35,14 @@ export const createJobController = async (req, res) => {
   res.status(201).json({
     message: "Job created successfully",
     job,
+  });
+};
+
+export const listJobsController = async (req, res) => {
+  const jobs = await getAllJobs();
+
+  res.status(200).json({
+    count: jobs.length,
+    jobs,
   });
 };
