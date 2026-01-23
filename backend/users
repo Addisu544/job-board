@@ -1,0 +1,50 @@
+ "message": "User registered successfully",
+    "user": {
+        "id": "cca004b4-c74c-4ab5-bf7f-0403b6233934",
+        "fullName": "re Doe",
+        "email": "em@test.com",
+        "role": "EMPLOYEE",
+        "createdAt": "2026-01-23T06:09:40.695Z"
+    }
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjY2EwMDRiNC1jNzRjLTRhYjUtYmY3Zi0wNDAzYjYyMzM5MzQiLCJyb2xlIjoiRU1QTE9ZRUUiLCJpYXQiOjE3NjkxNDg2NzAsImV4cCI6MTc2OTc1MzQ3MH0.ryXdeuc1Ew3Lv9INz9OeNAJ5kkRlLfaHRBQnC1HrI8s
+
+
+    "message": "User registered successfully",
+    "user": {
+        "id": "74884278-0b5e-4a23-8103-483f489f6244",
+        "fullName": "re Recruiter",
+        "email": "re@test.com",
+        "role": "RECRUITER",
+        "createdAt": "2026-01-23T06:17:51.602Z"
+    }
+    eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI3NDg4NDI3OC0wYjVlLTRhMjMtODEwMy00ODNmNDg5ZjYyNDQiLCJyb2xlIjoiUkVDUlVJVEVSIiwiaWF0IjoxNzY5MTQ5MTA3LCJleHAiOjE3Njk3NTM5MDd9.mS4HCLdKlXRc9XIrTA0sH3pnMI7MWsTKVnlBa04zvOE
+
+
+
+    {
+    "message": "Job created successfully",
+    "job": {
+        "id": "c4a7709c-705a-4e3d-b0d5-a370f027dff0",
+        "title": "Backend Developer",
+        "description": "Node.js + PostgreSQL",
+        "location": "Remote",
+        "jobType": "Full-time",
+        "status": "OPEN",
+        "createdAt": "2026-01-23T06:21:59.316Z",
+        "recruiterId": "1f5aa10d-7caf-4224-9acc-319e355a6ebb"
+    }
+}
+
+
+
+{
+    "message": "Application submitted successfully",
+    "application": {
+        "id": "2947f1df-ac69-4e68-b0d1-c2d4d398fbbb",
+        "coverLetter": "I am very interested in this position.",
+        "status": "SHORTLISTED",
+        "appliedAt": "2026-01-23T08:21:05.890Z",
+        "jobId": "c4a7709c-705a-4e3d-b0d5-a370f027dff0",
+        "employeeId": "ca3bf2d7-3bfd-499c-b386-b6b73f71021f"
+    }
+}
