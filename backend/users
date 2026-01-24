@@ -20,6 +20,20 @@ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjY2EwMDRiNC1jNzRjLTRhYjUtYmY
     eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI3NDg4NDI3OC0wYjVlLTRhMjMtODEwMy00ODNmNDg5ZjYyNDQiLCJyb2xlIjoiUkVDUlVJVEVSIiwiaWF0IjoxNzY5MTQ5MTA3LCJleHAiOjE3Njk3NTM5MDd9.mS4HCLdKlXRc9XIrTA0sH3pnMI7MWsTKVnlBa04zvOE
 
 
+{
+    "message": "User registered successfully",
+    "user": {
+        "id": "de6e8787-013b-4dc2-a4f2-4ab99a234659",
+        "fullName": "admin Doe",
+        "email": "admin@test.com",
+        "role": "ADMIN",
+        "createdAt": "2026-01-24T07:44:20.825Z"
+    }
+}
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJkZTZlODc4Ny0wMTNiLTRkYzItYTRmMi00YWI5OWEyMzQ2NTkiLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NjkyNDA3MzUsImV4cCI6MTc2OTg0NTUzNX0.sWWUNDkePGzW-UDYP7qQwJq_ama9uegEtHeG2CEqY60
+
+
+
 
     {
     "message": "Job created successfully",
