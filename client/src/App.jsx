@@ -23,6 +23,7 @@ import RecruiterDashboard from "./pages/recruiter/RecruiterDashboard";
 import EmployeeDashboard from "./pages/employee/EmployeeDashboard";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import JobList from "./pages/JobList";
+
 function App() {
   return (
     <Routes>
@@ -58,6 +59,7 @@ function App() {
         }
       />
       <Route path="/jobs" element={<JobList />} />
+      <Route path="/recruiter/*" element={<RecruiterDashboard />} />
     </Routes>
   );
 }
