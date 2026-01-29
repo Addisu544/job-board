@@ -22,9 +22,9 @@ const Login = () => {
 
     // Redirect by role
     if (res.data.user.role === "RECRUITER") {
-      navigate("/recruiter");
+      navigate("/recruiter/jobs");
     } else if (res.data.user.role === "EMPLOYEE") {
-      navigate("/employee");
+      navigate("/");
     } else {
       navigate("/admin/dashboard");
     }
