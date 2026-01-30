@@ -1,4 +1,7 @@
-import { getRecruiterProfileByUserId } from "../services/recruiterProfile.service.js";
+import {
+  getRecruiterProfileByUserId,
+  updateRecruiterProfileByUserId,
+} from "../services/recruiterProfile.service.js";
 
 import {
   getEmployeeProfileByUserId,
@@ -32,6 +35,14 @@ export const updateMyEmployeeProfile = async (req, res) => {
   const userId = req.user.id;
 
   const updatedProfile = await updateEmployeeProfileByUserId(userId, req.body);
+
+  res.status(200).json(updatedProfile);
+};
+
+export const updateMyRecruiterProfile = async (req, res) => {
+  const userId = req.user.id;
+
+  const updatedProfile = await updateRecruiterProfileByUserId(userId, req.body);
 
   res.status(200).json(updatedProfile);
 };

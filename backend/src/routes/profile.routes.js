@@ -5,6 +5,7 @@ import {
   getMyRecruiterProfile,
   getMyEmployeeProfile,
   updateMyEmployeeProfile,
+  updateMyRecruiterProfile,
 } from "../controllers/profile.controller.js";
 
 const router = express.Router();
@@ -17,6 +18,14 @@ router.get(
   getMyRecruiterProfile,
 );
 
+//Update Recruiter profile
+router.put(
+  "/recruiter/me",
+  authenticate,
+  authorizeRoles("RECRUITER"),
+  updateMyRecruiterProfile,
+);
+
 // Employee profile
 router.get(
   "/employee/me",
@@ -25,6 +34,7 @@ router.get(
   getMyEmployeeProfile,
 );
 
+//Update Employee profile
 router.put(
   "/employee/me",
   authenticate,

@@ -31,3 +31,18 @@ export const getRecruiterProfileByUserId = async (userId) => {
     },
   });
 };
+
+
+export const updateRecruiterProfileByUserId = async (
+  userId,
+  { companyName, companyWebsite, companyDescription }
+) => {
+  return prisma.recruiterProfile.update({
+    where: { userId },
+    data: {
+      companyName,
+      companyWebsite,
+      companyDescription,
+    },
+  });
+};

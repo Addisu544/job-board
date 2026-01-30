@@ -3,6 +3,7 @@ import { Box, Button, Stack, Typography } from "@mui/material";
 import CreateJob from "./CreateJob";
 import MyJobs from "./MyJobs";
 import JobApplicants from "./JobApplicants";
+import RecruiterProfile from "../profile/RecruiterProfile";
 
 const RecruiterDashboard = () => {
   return (
@@ -11,6 +12,7 @@ const RecruiterDashboard = () => {
         <Route path="create" element={<CreateJob />} />
         <Route path="jobs" element={<MyJobs />} />
         <Route path="jobs/:jobId/applications" element={<JobApplicants />} />
+        <Route path="profile" element={<RecruiterProfile />} />
       </Routes>
     </Box>
   );
