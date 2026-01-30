@@ -28,6 +28,12 @@ export const createJobController = async (req, res) => {
     });
   }
 
+  if (!recruiterProfile.companyName || !recruiterProfile.companyDescription) {
+    return res.status(403).json({
+      message: "Recruiter's profile is incomplete",
+    });
+  }
+
   // 3️⃣ Create job
   const job = await createJob({
     title,

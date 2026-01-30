@@ -25,11 +25,11 @@ export const register = async (req, res) => {
 
     //  Recruiter profile
     if (role === "RECRUITER") {
-      if (!companyName) {
-        return res.status(400).json({
-          message: "companyName is required for recruiter accounts",
-        });
-      }
+      // if (!companyName) {
+      //   return res.status(400).json({
+      //     message: "companyName is required for recruiter accounts",
+      //   });
+      // }
 
       await createRecruiterProfile({
         userId: user.id,

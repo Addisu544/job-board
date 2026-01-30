@@ -16,6 +16,12 @@ export const applyForJobController = async (req, res) => {
       message: "Employee profile not found",
     });
   }
+  if (!employeeProfile.resume || !employeeProfile.skills) {
+    return res.status(403).json({
+      message: "Please complete your profile before applying",
+      code: "PROFILE_INCOMPLETE",
+    });
+  }
 
   // 2️⃣ Check job exists and is OPEN
   const job = await prisma.job.findUnique({

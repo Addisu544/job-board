@@ -67,7 +67,7 @@ const Register = () => {
           <MenuItem value="RECRUITER">Recruiter</MenuItem>
         </TextField>
 
-        {form.role === "RECRUITER" && (
+        {/* {form.role === "RECRUITER" && (
           <TextField
             name="companyName"
             label="Company Name"
@@ -75,7 +75,7 @@ const Register = () => {
             margin="normal"
             onChange={handleChange}
           />
-        )}
+        )} */}
 
         <Button fullWidth variant="contained" type="submit" sx={{ mt: 2 }}>
           Register
