@@ -35,6 +35,7 @@ import {
   DialogContent,
   DialogActions,
   Box,
+  Chip,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api"; // adjust path if needed
@@ -87,6 +88,15 @@ const JobCardRecruiter = ({ job, onStatusChange }) => {
           >
             Status: {job.status}
           </Typography>
+
+          {/*Applications Count */}
+          <Box sx={{ mt: 1 }}>
+            <Chip
+              label={`Applications: ${applicationsCount}`}
+              color="primary"
+              variant="outlined"
+            />
+          </Box>
 
           <Box sx={{ mt: 2, display: "flex", gap: 2 }}>
             <Button
