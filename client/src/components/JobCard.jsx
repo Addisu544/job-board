@@ -1,6 +1,6 @@
 import { Card, CardContent, Typography, Button, Box } from "@mui/material";
 
-const JobCard = ({ job, onApply, isApplied }) => (
+const JobCard = ({ job, onApply, isApplied, onViewCompany }) => (
   <Card sx={{ mb: 2 }}>
     <CardContent>
       <Typography variant="h6">{job.title}</Typography>
@@ -8,13 +8,17 @@ const JobCard = ({ job, onApply, isApplied }) => (
       <Typography>{job.jobType}</Typography>
       <Typography>Status: {job.status}</Typography>
 
-      {onApply && !isApplied && (
-        <Box mt={2}>
+      <Box mt={2} display="flex" gap={2}>
+        {onApply && !isApplied && (
           <Button variant="contained" onClick={onApply}>
             Apply
           </Button>
-        </Box>
-      )}
+        )}
+
+        <Button variant="outlined" onClick={onViewCompany}>
+          View Company
+        </Button>
+      </Box>
 
       {isApplied && (
         <Typography mt={2} color="green">

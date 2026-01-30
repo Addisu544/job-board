@@ -30,6 +30,9 @@ const JobList = () => {
   const [selectedJobId, setSelectedJobId] = useState(null);
   const [coverLetter, setCoverLetter] = useState("");
 
+  const [companyDialogOpen, setCompanyDialogOpen] = useState(false);
+  const [selectedCompany, setSelectedCompany] = useState(null);
+
   // Fetch jobs (public) + applied jobs (only employee)
   useEffect(() => {
     const fetchData = async () => {
@@ -120,6 +123,18 @@ const JobList = () => {
     );
   }
 
+  const handleViewCompany = (job) => {
+    setSelectedCompany(job.recruiter || null);
+    setCompanyDialogOpen(true);
+  };
+  const formatUrl = (url) => {
+    if (!url) return "";
+    if (url.startsWith("http://") || url.startsWith("https://")) {
+      return url;
+    }
+    return `https://${url}`;
+  };
+
   return (
     <Container sx={{ mt: 5 }}>
       <Typography variant="h4" mb={3}>
@@ -139,6 +154,7 @@ const JobList = () => {
             showApplyButton={
               user?.role !== "RECRUITER" && user?.role !== "ADMIN"
             }
+            onViewCompany={() => handleViewCompany(job)}
           />
         );
       })}
@@ -203,6 +219,52 @@ const JobList = () => {
             Go to Profile
           </Button>
         </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={companyDialogOpen}
+        onClose={() => setCompanyDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          Company Profile
+          <Button onClick={() => setCompanyDialogOpen(false)}>✕</Button>
+        </DialogTitle>
+
+        <DialogContent>
+          {selectedCompany ? (
+            <>
+              <Typography variant="h6" mb={1}>
+                {selectedCompany.companyName}
+              </Typography>
+
+              {selectedCompany.companyWebsite && (
+                <Typography mb={1}>
+                  Website:{" "}
+                  <a
+                    // href={selectedCompany.companyWebsite}
+                    href={formatUrl(selectedCompany.companyWebsite)}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    {selectedCompany.companyWebsite}
+                  </a>
+                </Typography>
+              )}
+
+              <Typography>{selectedCompany.companyDescription}</Typography>
+            </>
+          ) : (
+            <Typography>No company information available.</Typography>
+          )}
+        </DialogContent>
       </Dialog>
     </Container>
   );
