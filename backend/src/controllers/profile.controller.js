@@ -1,6 +1,9 @@
 import { getRecruiterProfileByUserId } from "../services/recruiterProfile.service.js";
 
-import { getEmployeeProfileByUserId } from "../services/employeeProfile.service.js";
+import {
+  getEmployeeProfileByUserId,
+  updateEmployeeProfileByUserId,
+} from "../services/employeeProfile.service.js";
 
 export const getMyRecruiterProfile = async (req, res) => {
   const userId = req.user.id;
@@ -27,17 +30,8 @@ export const getMyEmployeeProfile = async (req, res) => {
 
 export const updateMyEmployeeProfile = async (req, res) => {
   const userId = req.user.id;
-  const { resume, skills, experience, education } = req.body;
 
-  const updated = await prisma.employeeProfile.update({
-    where: { userId },
-    data: {
-      resume,
-      skills,
-      experience,
-      education,
-    },
-  });
+  const updatedProfile = await updateEmployeeProfileByUserId(userId, req.body);
 
-  res.json(updated);
+  res.status(200).json(updatedProfile);
 };

@@ -23,3 +23,18 @@ export const getEmployeeProfileByUserId = async (userId) => {
     },
   });
 };
+
+export const updateEmployeeProfileByUserId = async (
+  userId,
+  { resume, skills, experience, education },
+) => {
+  return prisma.employeeProfile.update({
+    where: { userId },
+    data: {
+      resume,
+      skills,
+      experience,
+      education,
+    },
+  });
+};
