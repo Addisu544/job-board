@@ -24,6 +24,7 @@ import EmployeeDashboard from "./pages/employee/EmployeeDashboard";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import JobList from "./pages/JobList";
 import Navbar from "./components/Navbar";
+import EmployeeProfile from "./pages/profile/EmployeeProfile";
 
 function App() {
   return (
@@ -63,6 +64,14 @@ function App() {
           }
         />
         <Route path="/jobs" element={<JobList />} />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute roles={["EMPLOYEE"]}>
+              <EmployeeProfile />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </>
   );
