@@ -63,8 +63,6 @@ function App() {
           }
         />
         <Route path="/jobs" element={<JobList />} />
-        {/* <Route path="/recruiter/*" element={<RecruiterDashboard />} /> */}
-        {/* <Route path="/employee" element={<EmployeeDashboard />} /> */}
       </Routes>
     </>
   );

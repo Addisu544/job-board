@@ -24,3 +24,20 @@ export const getMyEmployeeProfile = async (req, res) => {
 
   res.status(200).json(profile);
 };
+
+export const updateMyEmployeeProfile = async (req, res) => {
+  const userId = req.user.id;
+  const { resume, skills, experience, education } = req.body;
+
+  const updated = await prisma.employeeProfile.update({
+    where: { userId },
+    data: {
+      resume,
+      skills,
+      experience,
+      education,
+    },
+  });
+
+  res.json(updated);
+};
