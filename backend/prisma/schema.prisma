@@ -29,6 +29,7 @@ enum UserStatus {
 enum JobStatus {
   OPEN
   HIRED
+  CLOSED
 }
 
 enum ApplicationStatus {
