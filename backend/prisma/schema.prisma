@@ -77,6 +77,19 @@ model EmployeeProfile {
   experience String?
   education  String?
 
+
+title        String?
+bio          String?
+cvPath       String?
+languages    String?
+level        String?
+linkedin     String?
+telegram     String?
+github       String?
+portfolio    String?
+availability String?
+
+
   userId String @unique
   user   User   @relation(fields: [userId], references: [id])
 

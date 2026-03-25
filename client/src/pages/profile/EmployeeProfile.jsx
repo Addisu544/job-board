@@ -18,11 +18,25 @@ const EmployeeProfile = () => {
     email: "",
   });
 
+  // const [form, setForm] = useState({
+  //   resume: "",
+  //   skills: "",
+  //   experience: "",
+  //   education: "",
+  // });
   const [form, setForm] = useState({
-    resume: "",
+    title: "",
+    bio: "",
     skills: "",
+    languages: "",
     experience: "",
     education: "",
+    level: "",
+    linkedin: "",
+    telegram: "",
+    github: "",
+    portfolio: "",
+    availability: "",
   });
 
   useEffect(() => {
@@ -35,11 +49,25 @@ const EmployeeProfile = () => {
           email: res.data.user.email,
         });
 
+        // setForm({
+        //   resume: res.data.resume || "",
+        //   skills: res.data.skills || "",
+        //   experience: res.data.experience || "",
+        //   education: res.data.education || "",
+        // });
         setForm({
-          resume: res.data.resume || "",
+          title: res.data.title || "",
+          bio: res.data.bio || "",
           skills: res.data.skills || "",
+          languages: res.data.languages || "",
           experience: res.data.experience || "",
           education: res.data.education || "",
+          level: res.data.level || "",
+          linkedin: res.data.linkedin || "",
+          telegram: res.data.telegram || "",
+          github: res.data.github || "",
+          portfolio: res.data.portfolio || "",
+          availability: res.data.availability || "",
         });
       } catch (err) {
         console.error(err);
@@ -85,7 +113,7 @@ const EmployeeProfile = () => {
         {userInfo.email}
       </Typography>
 
-      <TextField
+      {/* <TextField
         label="Resume"
         name="resume"
         fullWidth
@@ -123,8 +151,118 @@ const EmployeeProfile = () => {
         rows={2}
         value={form.education}
         onChange={handleChange}
+      /> */}
+      <TextField
+        label="Title"
+        name="title"
+        fullWidth
+        margin="normal"
+        value={form.title}
+        onChange={handleChange}
       />
 
+      <TextField
+        label="Bio"
+        name="bio"
+        fullWidth
+        margin="normal"
+        multiline
+        rows={2}
+        value={form.bio}
+        onChange={handleChange}
+      />
+
+      <TextField
+        label="Skills (comma separated)"
+        name="skills"
+        fullWidth
+        margin="normal"
+        value={form.skills}
+        onChange={handleChange}
+      />
+
+      <TextField
+        label="Languages (comma separated)"
+        name="languages"
+        fullWidth
+        margin="normal"
+        value={form.languages}
+        onChange={handleChange}
+      />
+
+      <TextField
+        label="Experience"
+        name="experience"
+        fullWidth
+        margin="normal"
+        multiline
+        rows={3}
+        value={form.experience}
+        onChange={handleChange}
+      />
+
+      <TextField
+        label="Education"
+        name="education"
+        fullWidth
+        margin="normal"
+        value={form.education}
+        onChange={handleChange}
+      />
+
+      <TextField
+        label="Education Level"
+        name="level"
+        fullWidth
+        margin="normal"
+        value={form.level}
+        onChange={handleChange}
+      />
+
+      <TextField
+        label="LinkedIn URL"
+        name="linkedin"
+        fullWidth
+        margin="normal"
+        value={form.linkedin}
+        onChange={handleChange}
+      />
+
+      <TextField
+        label="Telegram URL"
+        name="telegram"
+        fullWidth
+        margin="normal"
+        value={form.telegram}
+        onChange={handleChange}
+      />
+
+      <TextField
+        label="GitHub URL"
+        name="github"
+        fullWidth
+        margin="normal"
+        value={form.github}
+        onChange={handleChange}
+      />
+
+      <TextField
+        label="Portfolio URL"
+        name="portfolio"
+        fullWidth
+        margin="normal"
+        value={form.portfolio}
+        onChange={handleChange}
+      />
+
+      <TextField
+        label="Availability"
+        name="availability"
+        fullWidth
+        margin="normal"
+        value={form.availability}
+        onChange={handleChange}
+      />
       <Button
         variant="contained"
         fullWidth

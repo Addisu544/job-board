@@ -24,17 +24,54 @@ export const getEmployeeProfileByUserId = async (userId) => {
   });
 };
 
+// export const updateEmployeeProfileByUserId = async (
+//   userId,
+//   { resume, skills, experience, education },
+// ) => {
+//   return prisma.employeeProfile.update({
+//     where: { userId },
+//     data: {
+//       resume,
+//       skills,
+//       experience,
+//       education,
+//     },
+//   });
+// };
 export const updateEmployeeProfileByUserId = async (
   userId,
-  { resume, skills, experience, education },
+  {
+    title,
+    bio,
+    skills,
+    languages,
+    experience,
+    education,
+    level,
+    linkedin,
+    telegram,
+    github,
+    portfolio,
+    availability,
+    cvPath, // optional (for later multer)
+  },
 ) => {
   return prisma.employeeProfile.update({
     where: { userId },
     data: {
-      resume,
+      title,
+      bio,
       skills,
+      languages,
       experience,
       education,
+      level,
+      linkedin,
+      telegram,
+      github,
+      portfolio,
+      availability,
+      cvPath,
     },
   });
 };
