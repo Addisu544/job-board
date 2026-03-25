@@ -1,4 +1,5 @@
 import express from "express";
+import { uploadCV } from "../middleware/upload.middleware.js";
 import { authenticate } from "../middleware/auth.middleware.js";
 import { authorizeRoles } from "../middleware/role.middleware.js";
 import {
@@ -35,11 +36,18 @@ router.get(
 );
 
 //Update Employee profile
+// router.put(
+//   "/employee/me",
+//   authenticate,
+//   authorizeRoles("EMPLOYEE"),
+//   updateMyEmployeeProfile,
+// );
+
 router.put(
   "/employee/me",
   authenticate,
   authorizeRoles("EMPLOYEE"),
+  uploadCV.single("cv"), //  important
   updateMyEmployeeProfile,
 );
-
 export default router;

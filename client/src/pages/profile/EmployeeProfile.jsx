@@ -6,8 +6,16 @@ import {
   Button,
   Box,
   CircularProgress,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Chip,
 } from "@mui/material";
 import api from "../../services/api";
+import { skillsList } from "../../data/skills";
+import { languagesList } from "../../data/languages";
+import { educationLevels } from "../../data/educationLevel";
 
 const EmployeeProfile = () => {
   const [loading, setLoading] = useState(true);
@@ -27,8 +35,8 @@ const EmployeeProfile = () => {
   const [form, setForm] = useState({
     title: "",
     bio: "",
-    skills: "",
-    languages: "",
+    skills: [],
+    languages: [],
     experience: "",
     education: "",
     level: "",
@@ -37,7 +45,9 @@ const EmployeeProfile = () => {
     github: "",
     portfolio: "",
     availability: "",
+    cvPath: "",
   });
+  const [cvFile, setCvFile] = useState(null);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -58,8 +68,15 @@ const EmployeeProfile = () => {
         setForm({
           title: res.data.title || "",
           bio: res.data.bio || "",
-          skills: res.data.skills || "",
-          languages: res.data.languages || "",
+          // skills: res.data.skills || "",
+          // languages: res.data.languages || "",
+          skills: res.data.skills
+            ? res.data.skills.split(",").filter(Boolean)
+            : [],
+
+          languages: res.data.languages
+            ? res.data.languages.split(",").filter(Boolean)
+            : [],
           experience: res.data.experience || "",
           education: res.data.education || "",
           level: res.data.level || "",
@@ -68,6 +85,7 @@ const EmployeeProfile = () => {
           github: res.data.github || "",
           portfolio: res.data.portfolio || "",
           availability: res.data.availability || "",
+          cvPath: res.data.cvPath || "",
         });
       } catch (err) {
         console.error(err);
@@ -83,12 +101,104 @@ const EmployeeProfile = () => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  const handleAddSkill = (skill) => {
+    if (form.skills.length >= 5) return;
+    if (!form.skills.includes(skill)) {
+      setForm({ ...form, skills: [...form.skills, skill] });
+    }
+  };
+
+  const handleRemoveSkill = (skill) => {
+    setForm({
+      ...form,
+      skills: form.skills.filter((s) => s !== skill),
+    });
+  };
+
+  const handleAddLanguage = (lang) => {
+    if (!form.languages.includes(lang)) {
+      setForm({ ...form, languages: [...form.languages, lang] });
+    }
+  };
+
+  const handleRemoveLanguage = (lang) => {
+    setForm({
+      ...form,
+      languages: form.languages.filter((l) => l !== lang),
+    });
+  };
+
+  // const handleSubmit = async () => {
+  //   try {
+  //     setSaving(true);
+  //     await api.put("/profile/employee/me", form);
+  //     alert("Profile updated successfully");
+  //   } catch (err) {
+  //     alert("Failed to update profile");
+  //   } finally {
+  //     setSaving(false);
+  //   }
+  // };
+
+  // const handleSubmit = async () => {
+  //   try {
+  //     setSaving(true);
+
+  //     const formData = new FormData();
+
+  //     // append text fields
+  //     Object.keys(form).forEach((key) => {
+  //       formData.append(key, form[key]);
+  //     });
+
+  //     // append file
+  //     if (cvFile) {
+  //       formData.append("cv", cvFile);
+  //     }
+
+  //     await api.put("/profile/employee/me", formData, {
+  //       headers: {
+  //         "Content-Type": "multipart/form-data",
+  //       },
+  //     });
+
+  //     alert("Profile updated successfully");
+  //   } catch (err) {
+  //     alert("Failed to update profile");
+  //   } finally {
+  //     setSaving(false);
+  //   }
+  // };
+
   const handleSubmit = async () => {
     try {
       setSaving(true);
-      await api.put("/profile/employee/me", form);
+
+      const formData = new FormData();
+
+      const payload = {
+        ...form,
+        skills: form.skills.join(","), //  convert
+        languages: form.languages.join(","), //convert
+      };
+
+      Object.keys(payload).forEach((key) => {
+        formData.append(key, payload[key]);
+      });
+
+      if (cvFile) {
+        formData.append("cv", cvFile);
+      }
+
+      await api.put("/profile/employee/me", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
       alert("Profile updated successfully");
     } catch (err) {
+      console.log(err);
       alert("Failed to update profile");
     } finally {
       setSaving(false);
@@ -113,45 +223,6 @@ const EmployeeProfile = () => {
         {userInfo.email}
       </Typography>
 
-      {/* <TextField
-        label="Resume"
-        name="resume"
-        fullWidth
-        margin="normal"
-        value={form.resume}
-        onChange={handleChange}
-      />
-
-      <TextField
-        label="Skills"
-        name="skills"
-        fullWidth
-        margin="normal"
-        value={form.skills}
-        onChange={handleChange}
-      />
-
-      <TextField
-        label="Experience"
-        name="experience"
-        fullWidth
-        margin="normal"
-        multiline
-        rows={3}
-        value={form.experience}
-        onChange={handleChange}
-      />
-
-      <TextField
-        label="Education"
-        name="education"
-        fullWidth
-        margin="normal"
-        multiline
-        rows={2}
-        value={form.education}
-        onChange={handleChange}
-      /> */}
       <TextField
         label="Title"
         name="title"
@@ -171,27 +242,79 @@ const EmployeeProfile = () => {
         value={form.bio}
         onChange={handleChange}
       />
+      <Box>
+        <input
+          type="file"
+          accept="application/pdf"
+          onChange={(e) => setCvFile(e.target.files[0])}
+        />
+        {form.cvPath && (
+          <Box mt={2}>
+            <a
+              href={`http://localhost:5000${form.cvPath}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              View Current CV
+            </a>
+          </Box>
+        )}
+      </Box>
+
+      <FormControl fullWidth margin="normal">
+        <InputLabel>Skills (max 5)</InputLabel>
+        <Select
+          value=""
+          label="Skills (max 5)"
+          onChange={(e) => handleAddSkill(e.target.value)}
+        >
+          {skillsList.map((skill) => (
+            <MenuItem key={skill} value={skill}>
+              {skill}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+
+      <Box sx={{ mt: 1 }}>
+        {form.skills.map((skill) => (
+          <Chip
+            key={skill}
+            label={skill}
+            onDelete={() => handleRemoveSkill(skill)}
+            sx={{ m: 0.5 }}
+          />
+        ))}
+      </Box>
+
+      <FormControl fullWidth margin="normal">
+        <InputLabel>Languages</InputLabel>
+        <Select
+          value=""
+          label="Languages"
+          onChange={(e) => handleAddLanguage(e.target.value)}
+        >
+          {languagesList.map((lang) => (
+            <MenuItem key={lang} value={lang}>
+              {lang}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+
+      <Box sx={{ mt: 1 }}>
+        {form.languages.map((lang) => (
+          <Chip
+            key={lang}
+            label={lang}
+            onDelete={() => handleRemoveLanguage(lang)}
+            sx={{ m: 0.5 }}
+          />
+        ))}
+      </Box>
 
       <TextField
-        label="Skills (comma separated)"
-        name="skills"
-        fullWidth
-        margin="normal"
-        value={form.skills}
-        onChange={handleChange}
-      />
-
-      <TextField
-        label="Languages (comma separated)"
-        name="languages"
-        fullWidth
-        margin="normal"
-        value={form.languages}
-        onChange={handleChange}
-      />
-
-      <TextField
-        label="Experience"
+        label="Brief explanation of your Experience"
         name="experience"
         fullWidth
         margin="normal"
@@ -201,23 +324,21 @@ const EmployeeProfile = () => {
         onChange={handleChange}
       />
 
-      <TextField
-        label="Education"
-        name="education"
-        fullWidth
-        margin="normal"
-        value={form.education}
-        onChange={handleChange}
-      />
-
-      <TextField
-        label="Education Level"
-        name="level"
-        fullWidth
-        margin="normal"
-        value={form.level}
-        onChange={handleChange}
-      />
+      <FormControl fullWidth margin="normal">
+        <InputLabel>Education Level</InputLabel>
+        <Select
+          name="level"
+          value={form.level}
+          label="Education Level"
+          onChange={handleChange}
+        >
+          {educationLevels.map((level) => (
+            <MenuItem key={level} value={level}>
+              {level}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
 
       <TextField
         label="LinkedIn URL"

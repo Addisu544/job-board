@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import path from "path";
 import authRoutes from "./routes/auth.routes.js";
 import jobRoutes from "../src/routes/job.routes.js";
 import profileRoutes from "./routes/profile.routes.js";
@@ -17,4 +18,5 @@ app.use("/api/jobs", jobRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api", applicationRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/uploads", express.static("uploads"));
 export default app;
