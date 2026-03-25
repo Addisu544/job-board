@@ -15,6 +15,7 @@
 // export default App;
 
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -24,12 +25,19 @@ import EmployeeDashboard from "./pages/employee/EmployeeDashboard";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import JobList from "./pages/JobList";
 import Navbar from "./components/Navbar";
+import NavbarMinimal from "./components/Navbarminimal";
+
 import EmployeeProfile from "./pages/profile/EmployeeProfile";
 import HomePage from "./pages/HomePage";
 function App() {
+  const location = useLocation();
+
+  const hideNavbar =
+    location.pathname === "/login" || location.pathname === "/register";
+
   return (
     <>
-      <Navbar /> {/* Always visible */}
+      {!hideNavbar ? <Navbar /> : <NavbarMinimal />}
       <Routes>
         {/* <Route path="/" element={<Navigate to="/login" replace />} /> */}
         <Route path="/" element={<HomePage />} />
