@@ -27,9 +27,14 @@ const Navbar = () => {
         {/* Right side buttons */}
         <Box>
           {!user ? (
-            <Button color="inherit" onClick={() => navigate("/login")}>
-              Login
-            </Button>
+            <Box>
+              <Button color="inherit" onClick={() => navigate("/login")}>
+                sign in
+              </Button>
+              <Button color="inherit" onClick={() => navigate("/register")}>
+                sign up
+              </Button>
+            </Box>
           ) : (
             <>
               {/* Common logout button */}

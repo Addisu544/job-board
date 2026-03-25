@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { TextField, Button, Box, Typography } from "@mui/material";
+import { TextField, Button, Box, Typography, Link } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import { useAuth } from "../context/AuthContext";
@@ -55,6 +55,12 @@ const Login = () => {
           Login
         </Button>
       </form>
+      <Typography mt={2}>
+        Don't have an account?{" "}
+        <Link component="button" onClick={() => navigate("/register")}>
+          Register
+        </Link>
+      </Typography>
     </Box>
   );
 };

@@ -25,14 +25,14 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import JobList from "./pages/JobList";
 import Navbar from "./components/Navbar";
 import EmployeeProfile from "./pages/profile/EmployeeProfile";
-
+import HomePage from "./pages/HomePage";
 function App() {
   return (
     <>
       <Navbar /> {/* Always visible */}
       <Routes>
         {/* <Route path="/" element={<Navigate to="/login" replace />} /> */}
-        <Route path="/" element={<JobList />} />
+        <Route path="/" element={<HomePage />} />
 
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
