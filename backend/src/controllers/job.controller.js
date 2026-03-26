@@ -6,18 +6,70 @@ import {
   updateJobStatus,
 } from "../services/job.service.js";
 
+// export const createJobController = async (req, res) => {
+//   const userId = req.user.id;
+//   const { title, description, location, jobType } = req.body;
+
+//   // 1️⃣ Validate input
+//   if (!title || !description || !location || !jobType) {
+//     return res.status(400).json({
+//       message: "All fields are required",
+//     });
+//   }
+
+//   // 2️⃣ Get recruiter profile
+//   const recruiterProfile = await prisma.recruiterProfile.findUnique({
+//     where: { userId },
+//   });
+
+//   if (!recruiterProfile) {
+//     return res.status(403).json({
+//       message: "Recruiter profile not found",
+//     });
+//   }
+
+//   if (!recruiterProfile.companyName || !recruiterProfile.companyDescription) {
+//     return res.status(403).json({
+//       message: "Recruiter's profile is incomplete",
+//     });
+//   }
+
+//   // 3️⃣ Create job
+//   const job = await createJob({
+//     title,
+//     description,
+//     location,
+//     jobType,
+//     recruiterProfileId: recruiterProfile.id,
+//   });
+
+//   res.status(201).json({
+//     message: "Job created successfully",
+//     job,
+//   });
+// };
+
 export const createJobController = async (req, res) => {
   const userId = req.user.id;
-  const { title, description, location, jobType } = req.body;
 
-  // 1️⃣ Validate input
-  if (!title || !description || !location || !jobType) {
+  const {
+    title,
+    description,
+    city,
+    country,
+    jobType,
+    workMode,
+    skillsRequired,
+    experienceLevel,
+  } = req.body;
+
+  // validation
+  if (!title || !description || !city || !country || !jobType) {
     return res.status(400).json({
-      message: "All fields are required",
+      message: "Required fields missing",
     });
   }
 
-  // 2️⃣ Get recruiter profile
   const recruiterProfile = await prisma.recruiterProfile.findUnique({
     where: { userId },
   });
@@ -28,18 +80,15 @@ export const createJobController = async (req, res) => {
     });
   }
 
-  if (!recruiterProfile.companyName || !recruiterProfile.companyDescription) {
-    return res.status(403).json({
-      message: "Recruiter's profile is incomplete",
-    });
-  }
-
-  // 3️⃣ Create job
   const job = await createJob({
     title,
     description,
-    location,
+    city,
+    country,
     jobType,
+    workMode,
+    skillsRequired,
+    experienceLevel,
     recruiterProfileId: recruiterProfile.id,
   });
 

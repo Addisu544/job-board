@@ -1,14 +1,41 @@
 import { useState, useEffect } from "react";
-import { TextField, Button, Box, Typography, Alert } from "@mui/material";
+import {
+  TextField,
+  Button,
+  Box,
+  Typography,
+  Alert,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Chip,
+} from "@mui/material";
+import { jobTypes } from "../../data/jobTypes";
+import { workModes } from "../../data/workModes";
+import { experienceLevels } from "../../data/experienceLevels";
+import { skillsList } from "../../data/skills";
 import api from "../../services/api";
 import { useNavigate } from "react-router-dom";
 const CreateJob = () => {
-  const [form, setForm] = useState({
+  // const [form, setForm] = useState({
+  //   title: "",
+  //   description: "",
+  //   location: "",
+  //   jobType: "",
+  // });
+  const initialForm = {
     title: "",
     description: "",
-    location: "",
+    city: "",
+    country: "",
     jobType: "",
-  });
+    workMode: "",
+    skillsRequired: [],
+    experienceLevel: "",
+  };
+  const [form, setForm] = useState(initialForm);
+
   const [companyProfileComplete, setCompanyProfileComplete] = useState(true);
   const [loadingProfile, setLoadingProfile] = useState(true);
   const navigate = useNavigate();
@@ -38,9 +65,30 @@ const CreateJob = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await api.post("/jobs", form);
+    const payload = {
+      ...form,
+      skillsRequired: form.skillsRequired.join(","), // ✅ IMPORTANT
+    };
+    await api.post("/jobs", payload);
     alert("Job created successfully");
-    setForm({ title: "", description: "", location: "", jobType: "" });
+    setForm(initialForm);
+  };
+
+  const handleAddSkill = (skill) => {
+    if (form.skillsRequired.length >= 5) return;
+    if (!form.skillsRequired.includes(skill)) {
+      setForm({
+        ...form,
+        skillsRequired: [...form.skillsRequired, skill],
+      });
+    }
+  };
+
+  const handleRemoveSkill = (skill) => {
+    setForm({
+      ...form,
+      skillsRequired: form.skillsRequired.filter((s) => s !== skill),
+    });
   };
 
   return (
@@ -72,22 +120,87 @@ const CreateJob = () => {
           onChange={handleChange}
           disabled={!companyProfileComplete}
         />
-        <TextField
-          name="location"
-          label="Location"
-          fullWidth
-          margin="normal"
-          onChange={handleChange}
-          disabled={!companyProfileComplete}
-        />
-        <TextField
+        <FormControl fullWidth margin="normal">
+          <InputLabel>Country</InputLabel>
+          <Select name="country" value={form.country} onChange={handleChange}>
+            <MenuItem value="Ethiopia">Ethiopia</MenuItem>
+          </Select>
+        </FormControl>
+
+        <FormControl fullWidth margin="normal">
+          <InputLabel>City</InputLabel>
+          <Select name="city" value={form.city} onChange={handleChange}>
+            <MenuItem value="Addis Ababa">Addis Ababa</MenuItem>
+          </Select>
+        </FormControl>
+
+        {/* <TextField
           name="jobType"
           label="Job Type"
           fullWidth
           margin="normal"
           onChange={handleChange}
           disabled={!companyProfileComplete}
-        />
+        /> */}
+
+        <FormControl fullWidth margin="normal">
+          <InputLabel>Job Type</InputLabel>
+          <Select name="jobType" value={form.jobType} onChange={handleChange}>
+            {jobTypes.map((type) => (
+              <MenuItem key={type} value={type}>
+                {type}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        <FormControl fullWidth margin="normal">
+          <InputLabel>Work Mode</InputLabel>
+          <Select name="workMode" value={form.workMode} onChange={handleChange}>
+            {workModes.map((mode) => (
+              <MenuItem key={mode} value={mode}>
+                {mode}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        <FormControl fullWidth margin="normal">
+          <InputLabel>Experience Level</InputLabel>
+          <Select
+            name="experienceLevel"
+            value={form.experienceLevel}
+            onChange={handleChange}
+          >
+            {experienceLevels.map((level) => (
+              <MenuItem key={level} value={level}>
+                {level}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        <FormControl fullWidth margin="normal">
+          <InputLabel>Skills Required</InputLabel>
+          <Select value="" onChange={(e) => handleAddSkill(e.target.value)}>
+            {skillsList.map((skill) => (
+              <MenuItem key={skill} value={skill}>
+                {skill}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        <Box mt={1}>
+          {form.skillsRequired.map((skill) => (
+            <Chip
+              key={skill}
+              label={skill}
+              onDelete={() => handleRemoveSkill(skill)}
+              sx={{ m: 0.5 }}
+            />
+          ))}
+        </Box>
 
         <Button
           type="submit"

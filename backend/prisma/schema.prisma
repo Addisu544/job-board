@@ -109,10 +109,22 @@ model Job {
   id          String   @id @default(uuid())
   title       String
   description String
-  location    String
   jobType     String
+
+
+  // UPDATED
+  city        String?
+  country     String?
+
+ 
+  workMode    String?
+  skillsRequired String?
+  experienceLevel String?
+
   status      JobStatus @default(OPEN)
   createdAt   DateTime  @default(now())
+
+
 
   recruiterId String
   recruiter   RecruiterProfile @relation(fields: [recruiterId], references: [id])
