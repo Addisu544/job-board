@@ -62,6 +62,13 @@ model RecruiterProfile {
   companyWebsite String?
   companyDescription String?
 
+ // new file
+  industry       String?
+  companySize    String?
+  city           String?
+  country        String?
+  mission        String?
+
   userId String @unique
   user   User   @relation(fields: [userId], references: [id])
 

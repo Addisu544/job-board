@@ -6,7 +6,15 @@ import {
   Button,
   Box,
   CircularProgress,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
+import { industries } from "../../data/industries";
+import { companySizes } from "../../data/companySizes";
+import { countries } from "../../data/countries";
+import { cities } from "../../data/cities";
 import api from "../../services/api";
 
 const RecruiterProfile = () => {
@@ -18,10 +26,21 @@ const RecruiterProfile = () => {
     email: "",
   });
 
+  // const [form, setForm] = useState({
+  //   companyName: "",
+  //   companyWebsite: "",
+  //   companyDescription: "",
+  // });
+
   const [form, setForm] = useState({
     companyName: "",
     companyWebsite: "",
     companyDescription: "",
+    industry: "",
+    companySize: "",
+    city: "",
+    country: "",
+    mission: "",
   });
 
   useEffect(() => {
@@ -34,10 +53,20 @@ const RecruiterProfile = () => {
           email: res.data.user.email,
         });
 
+        // setForm({
+        //   companyName: res.data.companyName || "",
+        //   companyWebsite: res.data.companyWebsite || "",
+        //   companyDescription: res.data.companyDescription || "",
+        // });
         setForm({
           companyName: res.data.companyName || "",
           companyWebsite: res.data.companyWebsite || "",
           companyDescription: res.data.companyDescription || "",
+          industry: res.data.industry || "",
+          companySize: res.data.companySize || "",
+          city: res.data.city || "",
+          country: res.data.country || "",
+          mission: res.data.mission || "",
         });
       } catch (err) {
         console.error(err);
@@ -109,6 +138,87 @@ const RecruiterProfile = () => {
         multiline
         rows={4}
         value={form.companyDescription}
+        onChange={handleChange}
+      />
+
+      <FormControl fullWidth margin="normal">
+        <InputLabel>Industry</InputLabel>
+        <Select
+          name="industry"
+          value={form.industry}
+          label="Industry"
+          onChange={handleChange}
+        >
+          {industries.map((item) => (
+            <MenuItem key={item} value={item}>
+              {item}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+
+      <FormControl fullWidth margin="normal">
+        <InputLabel>Company Size</InputLabel>
+        <Select
+          name="companySize"
+          value={form.companySize}
+          label="Company Size"
+          onChange={handleChange}
+        >
+          {companySizes.map((size) => (
+            <MenuItem key={size} value={size}>
+              {size}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+
+      <FormControl fullWidth margin="normal">
+        <InputLabel>Company Size</InputLabel>
+        <Select
+          name="companySize"
+          value={form.companySize}
+          label="Company Size"
+          onChange={handleChange}
+        >
+          {companySizes.map((size) => (
+            <MenuItem key={size} value={size}>
+              {size}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+
+      <FormControl fullWidth margin="normal">
+        <InputLabel>Country</InputLabel>
+        <Select name="country" value={form.country} onChange={handleChange}>
+          {countries.map((c) => (
+            <MenuItem key={c} value={c}>
+              {c}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+
+      <FormControl fullWidth margin="normal">
+        <InputLabel>City</InputLabel>
+        <Select name="city" value={form.city} onChange={handleChange}>
+          {cities.map((c) => (
+            <MenuItem key={c} value={c}>
+              {c}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+
+      <TextField
+        label="Company Mission"
+        name="mission"
+        fullWidth
+        margin="normal"
+        multiline
+        rows={3}
+        value={form.mission}
         onChange={handleChange}
       />
 

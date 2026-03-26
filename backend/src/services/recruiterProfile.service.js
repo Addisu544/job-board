@@ -32,10 +32,32 @@ export const getRecruiterProfileByUserId = async (userId) => {
   });
 };
 
+// export const updateRecruiterProfileByUserId = async (
+//   userId,
+//   { companyName, companyWebsite, companyDescription }
+// ) => {
+//   return prisma.recruiterProfile.update({
+//     where: { userId },
+//     data: {
+//       companyName,
+//       companyWebsite,
+//       companyDescription,
+//     },
+//   });
+// };
 
 export const updateRecruiterProfileByUserId = async (
   userId,
-  { companyName, companyWebsite, companyDescription }
+  {
+    companyName,
+    companyWebsite,
+    companyDescription,
+    industry,
+    companySize,
+    city,
+    country,
+    mission,
+  },
 ) => {
   return prisma.recruiterProfile.update({
     where: { userId },
@@ -43,6 +65,11 @@ export const updateRecruiterProfileByUserId = async (
       companyName,
       companyWebsite,
       companyDescription,
+      industry,
+      companySize,
+      city,
+      country,
+      mission,
     },
   });
 };
