@@ -53,6 +53,13 @@ const Navbar = () => {
                   </Button>
                   <Button
                     color="inherit"
+                    onClick={() => navigate("/recruiter/jobs")}
+                  >
+                    my jobs
+                  </Button>
+
+                  <Button
+                    color="inherit"
                     onClick={() => navigate("/recruiter/create")}
                   >
                     Crete Jobs
