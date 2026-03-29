@@ -347,7 +347,6 @@ const JobList = () => {
               <Typography variant="h6" mb={1}>
                 {selectedCompany.companyName}
               </Typography>
-
               {selectedCompany.companyWebsite && (
                 <Typography mb={1}>
                   Website:{" "}
@@ -361,8 +360,19 @@ const JobList = () => {
                   </a>
                 </Typography>
               )}
-
-              <Typography>{selectedCompany.companyDescription}</Typography>
+              industry{" "}
+              <Typography>industry: {selectedCompany.industry}</Typography>
+              <Typography>
+                company size: {selectedCompany.companySize}
+              </Typography>
+              <Typography>
+                location:
+                {selectedCompany.city},{selectedCompany.country}
+              </Typography>
+              <Typography>mission: {selectedCompany.mission}</Typography>
+              <Typography>
+                company description: {selectedCompany.companyDescription}
+              </Typography>
             </>
           ) : (
             <Typography>No company information available.</Typography>

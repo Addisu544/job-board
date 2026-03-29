@@ -43,6 +43,11 @@ export const getAllJobs = async () => {
           companyName: true,
           companyWebsite: true,
           companyDescription: true,
+          industry: true,
+          companySize: true,
+          city: true,
+          country: true,
+          mission: true,
           user: {
             select: {
               fullName: true,
