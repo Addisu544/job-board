@@ -16,7 +16,7 @@ export const applyForJobController = async (req, res) => {
       message: "Employee profile not found",
     });
   }
-  if (!employeeProfile.resume || !employeeProfile.skills) {
+  if (!employeeProfile.bio || !employeeProfile.title) {
     return res.status(403).json({
       message: "Please complete your profile before applying",
       code: "PROFILE_INCOMPLETE",
@@ -83,7 +83,7 @@ export const getMyApplications = async (req, res) => {
           select: {
             id: true,
             title: true,
-            location: true,
+            // location: true,
             jobType: true,
             status: true,
           },
@@ -98,7 +98,7 @@ export const getMyApplications = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({
-      message: "Failed to fetch applied jobs",
+      message: "Failed to fetch applied jobs here",
       error: error.message,
     });
   }

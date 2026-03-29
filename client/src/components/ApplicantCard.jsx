@@ -109,7 +109,7 @@ import {
 } from "@mui/material";
 import api from "../services/api";
 
-const STATUS_OPTIONS = ["SHORTLISTED", "PASSED", "DECLINED"];
+const STATUS_OPTIONS = ["PENDING", "SHORTLISTED", "PASSED", "DECLINED"];
 
 const ApplicantCard = ({ application, jobId, onStatusChange }) => {
   const { employee, coverLetter } = application;
