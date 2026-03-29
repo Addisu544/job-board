@@ -9,6 +9,7 @@ export const createJob = async ({
   workMode,
   skillsRequired,
   experienceLevel,
+  jobIndustry,
   recruiterProfileId,
 }) => {
   return prisma.job.create({
@@ -21,6 +22,7 @@ export const createJob = async ({
       workMode,
       skillsRequired,
       experienceLevel,
+      jobIndustry,
       recruiterId: recruiterProfileId,
     },
   });

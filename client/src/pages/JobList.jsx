@@ -9,11 +9,20 @@ import {
   DialogActions,
   TextField,
   Button,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Box,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import JobCard from "../components/JobCard";
 import { useAuth } from "../context/AuthContext";
+import { jobTypes } from "../data/jobTypes";
+import { workModes } from "../data/workModes";
+import { industries } from "../data/industries";
+import { cities } from "../data/cities";
 
 const JobList = () => {
   const { user, loading } = useAuth();
@@ -33,6 +42,11 @@ const JobList = () => {
   const [companyDialogOpen, setCompanyDialogOpen] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState(null);
 
+  const [search, setSearch] = useState("");
+  const [filterType, setFilterType] = useState("");
+  const [filterWorkMode, setFilterWorkMode] = useState("");
+  const [filterCity, setFilterCity] = useState("");
+  const [filterIndustry, setIndustry] = useState("");
   // Fetch jobs (public) + applied jobs (only employee)
   useEffect(() => {
     const fetchData = async () => {
@@ -140,24 +154,113 @@ const JobList = () => {
       <Typography variant="h4" mb={3}>
         Job Listings
       </Typography>
+      <Box mb={3} display="flex" gap={2} flexWrap="wrap">
+        {/* Search */}
+        <TextField
+          label="Search by title"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
 
-      {jobs.map((job) => {
-        const alreadyApplied =
-          user?.role === "EMPLOYEE" && appliedJobs.includes(job.id);
+        {/* Job Type */}
+        <FormControl sx={{ minWidth: 150 }}>
+          <InputLabel>Job Type</InputLabel>
+          <Select
+            value={filterType}
+            onChange={(e) => setFilterType(e.target.value)}
+          >
+            <MenuItem value="">All</MenuItem>
+            {jobTypes.map((type) => (
+              <MenuItem key={type} value={type}>
+                {type}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
 
-        return (
-          <JobCard
-            key={job.id}
-            job={job}
-            onApply={alreadyApplied ? null : () => handleApplyClick(job.id)}
-            isApplied={alreadyApplied}
-            showApplyButton={
-              user?.role !== "RECRUITER" && user?.role !== "ADMIN"
-            }
-            onViewCompany={() => handleViewCompany(job)}
-          />
-        );
-      })}
+        {/* Job industry */}
+        <FormControl sx={{ minWidth: 150 }}>
+          <InputLabel>Job Industry</InputLabel>
+          <Select
+            value={filterIndustry}
+            onChange={(e) => setIndustry(e.target.value)}
+          >
+            <MenuItem value="">All</MenuItem>
+            {industries.map((industry) => (
+              <MenuItem key={industry} value={industry}>
+                {industry}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        {/* Work Mode */}
+        <FormControl sx={{ minWidth: 150 }}>
+          <InputLabel>Work Mode</InputLabel>
+          <Select
+            value={filterWorkMode}
+            onChange={(e) => setFilterWorkMode(e.target.value)}
+          >
+            <MenuItem value="">All</MenuItem>
+            {workModes.map((mode) => (
+              <MenuItem key={mode} value={mode}>
+                {mode}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        {/* City */}
+        <FormControl sx={{ minWidth: 150 }}>
+          <InputLabel>City</InputLabel>
+          {/* <Select
+            value={filterCity}
+            onChange={(e) => setFilterCity(e.target.value)}
+          >
+            <MenuItem value="">All</MenuItem>
+            <MenuItem value="Addis Ababa">Addis Ababa</MenuItem>
+          </Select> */}
+          <Select
+            value={filterCity}
+            onChange={(e) => setFilterCity(e.target.value)}
+          >
+            <MenuItem value="">All</MenuItem>
+            {cities.map((type) => (
+              <MenuItem key={type} value={type}>
+                {type}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Box>
+      {/* {jobs.map((job) => { */}
+      {jobs
+        .filter((job) => {
+          return (
+            job.title.toLowerCase().includes(search.toLowerCase()) &&
+            (filterType ? job.jobType === filterType : true) &&
+            (filterWorkMode ? job.workMode === filterWorkMode : true) &&
+            (filterCity ? job.city === filterCity : true) &&
+            (filterIndustry ? job.jobIndustry === filterIndustry : true)
+          );
+        })
+        .map((job) => {
+          const alreadyApplied =
+            user?.role === "EMPLOYEE" && appliedJobs.includes(job.id);
+
+          return (
+            <JobCard
+              key={job.id}
+              job={job}
+              onApply={alreadyApplied ? null : () => handleApplyClick(job.id)}
+              isApplied={alreadyApplied}
+              showApplyButton={
+                user?.role !== "RECRUITER" && user?.role !== "ADMIN"
+              }
+              onViewCompany={() => handleViewCompany(job)}
+            />
+          );
+        })}
 
       {/* Cover Letter Dialog */}
       <Dialog open={openDialog} onClose={handleCloseDialog}>

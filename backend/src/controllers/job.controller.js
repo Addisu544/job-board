@@ -61,6 +61,7 @@ export const createJobController = async (req, res) => {
     workMode,
     skillsRequired,
     experienceLevel,
+    jobIndustry,
   } = req.body;
 
   // validation
@@ -89,6 +90,7 @@ export const createJobController = async (req, res) => {
     workMode,
     skillsRequired,
     experienceLevel,
+    jobIndustry,
     recruiterProfileId: recruiterProfile.id,
   });
 

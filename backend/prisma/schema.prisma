@@ -110,7 +110,7 @@ model Job {
   title       String
   description String
   jobType     String
-
+  jobIndustry  String?
 
   // UPDATED
   city        String?
@@ -120,6 +120,7 @@ model Job {
   workMode    String?
   skillsRequired String?
   experienceLevel String?
+
 
   status      JobStatus @default(OPEN)
   createdAt   DateTime  @default(now())

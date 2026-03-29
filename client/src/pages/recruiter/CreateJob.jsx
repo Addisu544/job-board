@@ -13,8 +13,11 @@ import {
 } from "@mui/material";
 import { jobTypes } from "../../data/jobTypes";
 import { workModes } from "../../data/workModes";
+import { industries } from "../../data/industries";
 import { experienceLevels } from "../../data/experienceLevels";
 import { skillsList } from "../../data/skills";
+import { cities } from "../../data/cities";
+import { countries } from "../../data/countries";
 import api from "../../services/api";
 import { useNavigate } from "react-router-dom";
 const CreateJob = () => {
@@ -33,6 +36,7 @@ const CreateJob = () => {
     workMode: "",
     skillsRequired: [],
     experienceLevel: "",
+    jobIndustry: "",
   };
   const [form, setForm] = useState(initialForm);
 
@@ -123,14 +127,22 @@ const CreateJob = () => {
         <FormControl fullWidth margin="normal">
           <InputLabel>Country</InputLabel>
           <Select name="country" value={form.country} onChange={handleChange}>
-            <MenuItem value="Ethiopia">Ethiopia</MenuItem>
+            {countries.map((country) => (
+              <MenuItem key={country} value={country}>
+                {country}
+              </MenuItem>
+            ))}
           </Select>
         </FormControl>
 
         <FormControl fullWidth margin="normal">
           <InputLabel>City</InputLabel>
           <Select name="city" value={form.city} onChange={handleChange}>
-            <MenuItem value="Addis Ababa">Addis Ababa</MenuItem>
+            {cities.map((city) => (
+              <MenuItem key={city} value={city}>
+                {city}
+              </MenuItem>
+            ))}
           </Select>
         </FormControl>
 
@@ -160,6 +172,21 @@ const CreateJob = () => {
             {workModes.map((mode) => (
               <MenuItem key={mode} value={mode}>
                 {mode}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        <FormControl fullWidth margin="normal">
+          <InputLabel>Job Industry</InputLabel>
+          <Select
+            name="jobIndustry"
+            value={form.jobIndustry}
+            onChange={handleChange}
+          >
+            {industries.map((industry) => (
+              <MenuItem key={industry} value={industry}>
+                {industry}
               </MenuItem>
             ))}
           </Select>
