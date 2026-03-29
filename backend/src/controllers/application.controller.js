@@ -143,6 +143,16 @@ export const getJobApplications = async (req, res) => {
             skills: true,
             experience: true,
             education: true,
+            level: true,
+            title: true,
+            bio: true,
+            linkedin: true,
+            telegram: true,
+            github: true,
+            portfolio: true,
+            availability: true,
+            cvPath: true,
+
             user: {
               select: {
                 fullName: true,

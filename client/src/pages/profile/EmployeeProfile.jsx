@@ -324,6 +324,15 @@ const EmployeeProfile = () => {
         onChange={handleChange}
       />
 
+      <TextField
+        label="Education"
+        name="education"
+        fullWidth
+        margin="normal"
+        value={form.education}
+        onChange={handleChange}
+      />
+
       <FormControl fullWidth margin="normal">
         <InputLabel>Education Level</InputLabel>
         <Select
