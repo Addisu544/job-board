@@ -21,7 +21,7 @@ const Navbar = () => {
           sx={{ cursor: "pointer" }}
           onClick={() => navigate("/")}
         >
-          JobBoard
+          HireHub
         </Typography>
 
         {/* Right side buttons */}

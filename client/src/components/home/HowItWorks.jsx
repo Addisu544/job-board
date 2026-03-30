@@ -2,12 +2,12 @@ import { Box, Typography, Grid } from "@mui/material";
 
 const HowItWorks = () => {
   return (
-    <Box sx={{ py: 6 }}>
+    <Box sx={{ py: 6, maxWidth: 1200, mx: "auto" }}>
       <Typography variant="h5" textAlign="center" mb={4}>
         How It Works
       </Typography>
 
-      <Grid container spacing={4}>
+      <Grid container spacing={4} justifyContent="center">
         <Grid item xs={12} md={6}>
           <Typography fontWeight="bold">For Job Seekers</Typography>
           <Typography>1. Create profile</Typography>

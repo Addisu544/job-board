@@ -13,7 +13,7 @@ const categories = [
 
 const CategorySection = () => {
   return (
-    <Box sx={{ py: 6 }}>
+    <Box sx={{ py: 6, maxWidth: 1200, mx: "auto" }}>
       <Typography variant="h5" textAlign="center" mb={4}>
         Explore Career Categories
       </Typography>
