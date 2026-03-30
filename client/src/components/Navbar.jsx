@@ -87,7 +87,13 @@ const Navbar = () => {
                     color="inherit"
                     onClick={() => navigate("/admin/dashboard")}
                   >
-                    Users
+                    dashboard
+                  </Button>
+                  <Button
+                    color="inherit"
+                    onClick={() => navigate("/admin/users")}
+                  >
+                    users
                   </Button>
                 </>
               )}

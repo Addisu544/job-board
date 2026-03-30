@@ -23,6 +23,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import RecruiterDashboard from "./pages/recruiter/RecruiterDashboard";
 import EmployeeDashboard from "./pages/employee/EmployeeDashboard";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import Users from "./pages/admin/Users";
 import JobList from "./pages/JobList";
 import Navbar from "./components/Navbar";
 import NavbarMinimal from "./components/Navbarminimal";
@@ -79,6 +80,14 @@ function App() {
           element={
             <ProtectedRoute roles={["ADMIN"]}>
               <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/users"
+          element={
+            <ProtectedRoute roles={["ADMIN"]}>
+              <Users />
             </ProtectedRoute>
           }
         />
