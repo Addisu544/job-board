@@ -1,30 +1,68 @@
 import prisma from "../lib/prisma.js";
 
+// export const getDashboardStats = async () => {
+//   const totalUsers = await prisma.user.count();
+
+//   const totalRecruiters = await prisma.user.count({
+//     where: { role: "RECRUITER" },
+//   });
+
+//   const totalEmployees = await prisma.user.count({
+//     where: { role: "EMPLOYEE" },
+//   });
+
+//   const totalJobs = await prisma.job.count();
+
+//   const totalApplications = await prisma.application.count();
+
+//   const openJobs = await prisma.job.count({
+//     where: { status: "OPEN" },
+//   });
+
+//   return {
+//     totalUsers,
+//     totalRecruiters,
+//     totalEmployees,
+//     totalJobs,
+//     totalApplications,
+//     openJobs,
+//   };
+// };
+
 export const getDashboardStats = async () => {
-  const totalUsers = await prisma.user.count();
+  const [
+    totalUsers,
+    totalRecruiters,
+    totalEmployees,
+    totalJobs,
+    openJobs,
+    totalApplications,
+  ] = await Promise.all([
+    prisma.user.count(),
 
-  const totalRecruiters = await prisma.user.count({
-    where: { role: "RECRUITER" },
-  });
+    prisma.user.count({
+      where: { role: "RECRUITER" },
+    }),
 
-  const totalEmployees = await prisma.user.count({
-    where: { role: "EMPLOYEE" },
-  });
+    prisma.user.count({
+      where: { role: "EMPLOYEE" },
+    }),
 
-  const totalJobs = await prisma.job.count();
+    prisma.job.count(),
 
-  const totalApplications = await prisma.application.count();
+    prisma.job.count({
+      where: { status: "OPEN" },
+    }),
 
-  const openJobs = await prisma.job.count({
-    where: { status: "OPEN" },
-  });
+    prisma.application.count(),
+  ]);
 
   return {
     totalUsers,
     totalRecruiters,
     totalEmployees,
     totalJobs,
-    totalApplications,
     openJobs,
+    totalApplications,
   };
 };
