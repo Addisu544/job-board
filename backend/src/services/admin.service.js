@@ -13,10 +13,18 @@ export const getDashboardStats = async () => {
 
   const totalJobs = await prisma.job.count();
 
+  const totalApplications = await prisma.application.count();
+
+  const openJobs = await prisma.job.count({
+    where: { status: "OPEN" },
+  });
+
   return {
     totalUsers,
     totalRecruiters,
     totalEmployees,
     totalJobs,
+    totalApplications,
+    openJobs,
   };
 };
