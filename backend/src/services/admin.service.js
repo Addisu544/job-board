@@ -1,5 +1,27 @@
 import prisma from "../lib/prisma.js";
 
+export const getAllUsers = async () => {
+  return prisma.user.findMany({
+    select: {
+      id: true,
+      fullName: true,
+      email: true,
+      role: true,
+      status: true,
+      createdAt: true,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+};
+
+export const updateUserStatus = async (userId, status) => {
+  return prisma.user.update({
+    where: { id: userId },
+    data: { status },
+  });
+};
 // export const getDashboardStats = async () => {
 //   const totalUsers = await prisma.user.count();
 
