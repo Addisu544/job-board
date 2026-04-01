@@ -46,12 +46,13 @@ export function AuthProvider({ children }) {
   });
 
   const [token, setToken] = useState(() => localStorage.getItem("token"));
+  const [mode, setMode] = useState(() => localStorage.getItem("ui-mode") || "light");
 
-  const [loading, setLoading] = useState(true); // auth initialization loading
+  const loading = false;
 
   useEffect(() => {
-    setLoading(false); // finished reading from localStorage
-  }, []);
+    localStorage.setItem("ui-mode", mode);
+  }, [mode]);
 
   const login = (token, user) => {
     setToken(token);
@@ -67,8 +68,14 @@ export function AuthProvider({ children }) {
     localStorage.removeItem("user");
   };
 
+  const toggleMode = () => {
+    setMode((prevMode) => (prevMode === "light" ? "dark" : "light"));
+  };
+
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, loading }}>
+    <AuthContext.Provider
+      value={{ user, token, login, logout, loading, mode, toggleMode }}
+    >
       {children}
     </AuthContext.Provider>
   );

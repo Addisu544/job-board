@@ -1,8 +1,12 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-const ProtectedRoute = ({ children, roles }) => {
-  const { user } = useAuth();
+const ProtectedRoute = ({ children, roles, fallback = null }) => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return fallback;
+  }
 
   if (!user) {
     return <Navigate to="/login" replace />;
