@@ -17,7 +17,7 @@
 import { Routes, Route } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import { Box, CircularProgress, Container } from "@mui/material";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion as Motion } from "framer-motion";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -39,14 +39,14 @@ import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 
 const PageTransition = ({ children }) => (
-  <motion.div
+  <Motion.div
     initial={{ opacity: 0, y: 8 }}
     animate={{ opacity: 1, y: 0 }}
     exit={{ opacity: 0, y: -8 }}
     transition={{ duration: 0.22, ease: "easeOut" }}
   >
     {children}
-  </motion.div>
+  </Motion.div>
 );
 
 const RouteLoader = () => (
