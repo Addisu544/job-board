@@ -14,29 +14,29 @@
 
 // export default App;
 
-import { Routes, Route } from "react-router-dom";
-import { useLocation } from "react-router-dom";
+import React, { Suspense } from "react";
+import { Routes, Route, useLocation } from "react-router-dom";
 import { Box, CircularProgress, Container } from "@mui/material";
 import { AnimatePresence, motion as Motion } from "framer-motion";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import ProtectedRoute from "./components/ProtectedRoute";
+import { Toaster } from "react-hot-toast";
 
-import RecruiterDashboard from "./pages/recruiter/RecruiterDashboard";
-import EmployeeDashboard from "./pages/employee/EmployeeDashboard";
-import AdminDashboard from "./pages/admin/AdminDashboard";
-import Users from "./pages/admin/Users";
-import JobList from "./pages/JobList";
+import ProtectedRoute from "./components/ProtectedRoute";
 import Navbar from "./components/Navbar";
 import NavbarMinimal from "./components/NavbarMinimal";
 
-import EmployeeProfile from "./pages/profile/EmployeeProfile";
-import HomePage from "./pages/HomePage";
-
-import About from "./pages/About";
-import Contact from "./pages/Contact";
-import Privacy from "./pages/Privacy";
-import Terms from "./pages/Terms";
+const Login = React.lazy(() => import("./pages/Login"));
+const Register = React.lazy(() => import("./pages/Register"));
+const RecruiterDashboard = React.lazy(() => import("./pages/recruiter/RecruiterDashboard"));
+const EmployeeDashboard = React.lazy(() => import("./pages/employee/EmployeeDashboard"));
+const AdminDashboard = React.lazy(() => import("./pages/admin/AdminDashboard"));
+const Users = React.lazy(() => import("./pages/admin/Users"));
+const JobList = React.lazy(() => import("./pages/JobList"));
+const EmployeeProfile = React.lazy(() => import("./pages/profile/EmployeeProfile"));
+const HomePage = React.lazy(() => import("./pages/HomePage"));
+const About = React.lazy(() => import("./pages/About"));
+const Contact = React.lazy(() => import("./pages/Contact"));
+const Privacy = React.lazy(() => import("./pages/Privacy"));
+const Terms = React.lazy(() => import("./pages/Terms"));
 
 const PageTransition = ({ children }) => (
   <Motion.div
@@ -71,6 +71,7 @@ function App() {
 
   return (
     <Box sx={{ minHeight: "100vh" }}>
+      <Toaster position="top-right" />
       {!hideNavbar ? <Navbar /> : <NavbarMinimal />}
       <Container
         component="main"
@@ -81,6 +82,7 @@ function App() {
         }}
       >
         <AnimatePresence mode="wait">
+          <Suspense fallback={<RouteLoader />}>
           <Routes location={location} key={location.pathname}>
             {/* <Route path="/" element={<Navigate to="/login" replace />} /> */}
             <Route
@@ -203,6 +205,7 @@ function App() {
               }
             />
           </Routes>
+          </Suspense>
         </AnimatePresence>
       </Container>
     </Box>
