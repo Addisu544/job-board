@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Container,
   Typography,
   CircularProgress,
+  Alert,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -14,13 +15,30 @@ import {
   Select,
   MenuItem,
   Box,
+  Paper,
+  Checkbox,
+  ListItemText,
+  Divider,
+  Slider,
+  Switch,
+  FormControlLabel,
+  Skeleton,
+  Grid,
+  Drawer,
+  Stack,
+  IconButton,
+  ToggleButtonGroup,
+  ToggleButton,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import SearchIcon from "@mui/icons-material/Search";
+import TuneIcon from "@mui/icons-material/Tune";
+import ViewModuleOutlinedIcon from "@mui/icons-material/ViewModuleOutlined";
+import ViewListOutlinedIcon from "@mui/icons-material/ViewListOutlined";
 import api from "../services/api";
 import JobCard from "../components/JobCard";
 import { useAuth } from "../context/AuthContext";
 import { jobTypes } from "../data/jobTypes";
-import { workModes } from "../data/workModes";
 import { industries } from "../data/industries";
 import { cities } from "../data/cities";
 
@@ -43,10 +61,22 @@ const JobList = () => {
   const [selectedCompany, setSelectedCompany] = useState(null);
 
   const [search, setSearch] = useState("");
-  const [filterType, setFilterType] = useState("");
-  const [filterWorkMode, setFilterWorkMode] = useState("");
-  const [filterCity, setFilterCity] = useState("");
-  const [filterIndustry, setIndustry] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  // Enterprise filters (UI only for public jobs).
+  const [selectedJobTypes, setSelectedJobTypes] = useState([]);
+  const [selectedIndustries, setSelectedIndustries] = useState([]);
+  const [selectedLocations, setSelectedLocations] = useState([]);
+  const [remoteOnly, setRemoteOnly] = useState(false);
+  const [salaryMin, setSalaryMin] = useState(0);
+
+  // Results UX
+  const [viewMode, setViewMode] = useState("grid");
+  const pageSize = 10;
+  const [visibleCount, setVisibleCount] = useState(pageSize);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const sentinelRef = useRef(null);
   // Fetch jobs (public) + applied jobs (only employee)
   useEffect(() => {
     const fetchData = async () => {
@@ -128,6 +158,141 @@ const JobList = () => {
     }
   };
 
+  // Debounce search for a smoother enterprise-like filtering experience.
+  useEffect(() => {
+    const t = window.setTimeout(() => setDebouncedSearch(search), 350);
+    return () => window.clearTimeout(t);
+  }, [search]);
+
+  const hasAnySalary = useMemo(
+    () =>
+      jobs.some((j) => typeof j.salary === "number" && Number.isFinite(j.salary)),
+    [jobs],
+  );
+
+  const salaryMax = useMemo(() => {
+    const values = jobs
+      .map((j) => (typeof j.salary === "number" ? j.salary : null))
+      .filter((v) => typeof v === "number" && Number.isFinite(v));
+
+    if (!values.length) return 200000;
+    return Math.max(...values, 200000);
+  }, [jobs]);
+
+  const filteredJobs = useMemo(() => {
+    const q = debouncedSearch.trim().toLowerCase();
+
+    return jobs.filter((job) => {
+      const haystack = [
+        job.title,
+        job.description,
+        job.jobIndustry,
+        job.city,
+        job.country,
+        job.skillsRequired,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+
+      const matchesSearch = !q || haystack.includes(q);
+      const matchesJobTypes =
+        selectedJobTypes.length === 0 ||
+        selectedJobTypes.includes(job.jobType);
+      const matchesIndustries =
+        selectedIndustries.length === 0 ||
+        selectedIndustries.includes(job.jobIndustry);
+      const matchesLocations =
+        selectedLocations.length === 0 ||
+        selectedLocations.includes(job.city);
+      const matchesRemote =
+        !remoteOnly || (job.workMode || "").toLowerCase() === "remote";
+
+      const jobSalary = typeof job.salary === "number" ? job.salary : null;
+      const matchesSalary =
+        !hasAnySalary ||
+        salaryMin === 0 ||
+        jobSalary == null ||
+        jobSalary >= salaryMin;
+
+      return (
+        matchesSearch &&
+        matchesJobTypes &&
+        matchesIndustries &&
+        matchesLocations &&
+        matchesRemote &&
+        matchesSalary
+      );
+    });
+  }, [
+    debouncedSearch,
+    jobs,
+    hasAnySalary,
+    salaryMin,
+    remoteOnly,
+    selectedIndustries,
+    selectedJobTypes,
+    selectedLocations,
+  ]);
+
+  const visibleJobs = useMemo(
+    () => filteredJobs.slice(0, visibleCount),
+    [filteredJobs, visibleCount],
+  );
+
+  const canFetchMore = visibleCount < filteredJobs.length;
+
+  // Reset pagination when any filter changes.
+  useEffect(() => {
+    setVisibleCount(pageSize);
+    setIsFetchingMore(false);
+  }, [
+    debouncedSearch,
+    remoteOnly,
+    salaryMin,
+    selectedIndustries,
+    selectedJobTypes,
+    selectedLocations,
+    pageSize,
+  ]);
+
+  // Infinite scroll (UI-only): we reveal more results from the already-fetched dataset.
+  useEffect(() => {
+    if (!sentinelRef.current) return;
+    if (!canFetchMore || isFetchingMore) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries[0]?.isIntersecting) return;
+        if (!canFetchMore) return;
+
+        setIsFetchingMore(true);
+        window.setTimeout(() => {
+          setVisibleCount((v) =>
+            Math.min(v + pageSize, filteredJobs.length),
+          );
+          setIsFetchingMore(false);
+        }, 450);
+      },
+      { rootMargin: "500px" },
+    );
+
+    observer.observe(sentinelRef.current);
+    return () => observer.disconnect();
+  }, [canFetchMore, filteredJobs.length, isFetchingMore, pageSize, visibleCount]);
+
+  const clearFilters = () => {
+    setSearch("");
+    setDebouncedSearch("");
+    setSelectedJobTypes([]);
+    setSelectedIndustries([]);
+    setSelectedLocations([]);
+    setRemoteOnly(false);
+    setSalaryMin(0);
+    setVisibleCount(pageSize);
+    setIsFetchingMore(false);
+  };
+
   if (loading || loadingData) {
     return (
       <Container sx={{ mt: 5, textAlign: "center" }}>
@@ -150,117 +315,386 @@ const JobList = () => {
   };
 
   return (
-    <Container sx={{ mt: 5 }}>
-      <Typography variant="h4" mb={3}>
-        Job Listings
-      </Typography>
-      <Box mb={3} display="flex" gap={2} flexWrap="wrap">
-        {/* Search */}
-        <TextField
-          label="Search by title"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+    <Container maxWidth="xl" sx={{ py: { xs: 4, md: 6 } }}>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "flex-start",
+          justifyContent: "space-between",
+          gap: 2,
+          flexWrap: "wrap",
+          mb: 3,
+        }}
+      >
+        <Box>
+          <Typography variant="h4" fontWeight={900}>
+            Job Search
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            {filteredJobs.length.toLocaleString()} matching roles
+          </Typography>
+        </Box>
 
-        {/* Job Type */}
-        <FormControl sx={{ minWidth: 150 }}>
-          <InputLabel>Job Type</InputLabel>
-          <Select
-            value={filterType}
-            onChange={(e) => setFilterType(e.target.value)}
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <IconButton
+            sx={{ display: { xs: "inline-flex", md: "none" } }}
+            onClick={() => setMobileFiltersOpen(true)}
+            aria-label="Open filters"
           >
-            <MenuItem value="">All</MenuItem>
-            {jobTypes.map((type) => (
-              <MenuItem key={type} value={type}>
-                {type}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+            <TuneIcon />
+          </IconButton>
 
-        {/* Job industry */}
-        <FormControl sx={{ minWidth: 150 }}>
-          <InputLabel>Job Industry</InputLabel>
-          <Select
-            value={filterIndustry}
-            onChange={(e) => setIndustry(e.target.value)}
+          <ToggleButtonGroup
+            value={viewMode}
+            exclusive
+            onChange={(_, value) => {
+              if (value) setViewMode(value);
+            }}
+            aria-label="Job results view"
           >
-            <MenuItem value="">All</MenuItem>
-            {industries.map((industry) => (
-              <MenuItem key={industry} value={industry}>
-                {industry}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-
-        {/* Work Mode */}
-        <FormControl sx={{ minWidth: 150 }}>
-          <InputLabel>Work Mode</InputLabel>
-          <Select
-            value={filterWorkMode}
-            onChange={(e) => setFilterWorkMode(e.target.value)}
-          >
-            <MenuItem value="">All</MenuItem>
-            {workModes.map((mode) => (
-              <MenuItem key={mode} value={mode}>
-                {mode}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-
-        {/* City */}
-        <FormControl sx={{ minWidth: 150 }}>
-          <InputLabel>City</InputLabel>
-          {/* <Select
-            value={filterCity}
-            onChange={(e) => setFilterCity(e.target.value)}
-          >
-            <MenuItem value="">All</MenuItem>
-            <MenuItem value="Addis Ababa">Addis Ababa</MenuItem>
-          </Select> */}
-          <Select
-            value={filterCity}
-            onChange={(e) => setFilterCity(e.target.value)}
-          >
-            <MenuItem value="">All</MenuItem>
-            {cities.map((type) => (
-              <MenuItem key={type} value={type}>
-                {type}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+            <ToggleButton value="grid" aria-label="Grid view">
+              <ViewModuleOutlinedIcon fontSize="small" />
+            </ToggleButton>
+            <ToggleButton value="list" aria-label="List view">
+              <ViewListOutlinedIcon fontSize="small" />
+            </ToggleButton>
+          </ToggleButtonGroup>
+        </Box>
       </Box>
-      {/* {jobs.map((job) => { */}
-      {jobs
-        .filter((job) => {
-          return (
-            job.title.toLowerCase().includes(search.toLowerCase()) &&
-            (filterType ? job.jobType === filterType : true) &&
-            (filterWorkMode ? job.workMode === filterWorkMode : true) &&
-            (filterCity ? job.city === filterCity : true) &&
-            (filterIndustry ? job.jobIndustry === filterIndustry : true)
-          );
-        })
-        .map((job) => {
-          const alreadyApplied =
-            user?.role === "EMPLOYEE" && appliedJobs.includes(job.id);
 
-          return (
-            <JobCard
-              key={job.id}
-              job={job}
-              onApply={alreadyApplied ? null : () => handleApplyClick(job.id)}
-              isApplied={alreadyApplied}
-              showApplyButton={
-                user?.role !== "RECRUITER" && user?.role !== "ADMIN"
+      <Box
+        sx={{
+          display: { xs: "block", md: "grid" },
+          gridTemplateColumns: { md: "320px 1fr" },
+          gap: 3,
+        }}
+      >
+        {/* Desktop filters */}
+        <Paper
+          sx={{
+            p: 2,
+            display: { xs: "none", md: "block" },
+            position: "sticky",
+            top: 88,
+            alignSelf: "start",
+          }}
+        >
+          <Typography variant="h6" fontWeight={900} mb={1.5}>
+            Filters
+          </Typography>
+
+          <TextField
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search jobs, companies, skills..."
+            label="Search"
+            fullWidth
+            size="small"
+            InputProps={{ startAdornment: <SearchIcon fontSize="small" sx={{ mr: 1 }} /> }}
+            sx={{ mb: 2 }}
+          />
+
+          <FormControl fullWidth size="small" sx={{ mb: 2 }}>
+            <InputLabel id="jobTypes-label">Job Types</InputLabel>
+            <Select
+              labelId="jobTypes-label"
+              multiple
+              value={selectedJobTypes}
+              label="Job Types"
+              onChange={(e) => setSelectedJobTypes(e.target.value)}
+              renderValue={(selected) =>
+                selected.length ? `${selected.length} selected` : "All"
               }
-              onViewCompany={() => handleViewCompany(job)}
+            >
+              {jobTypes.map((type) => (
+                <MenuItem key={type} value={type}>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <Checkbox checked={selectedJobTypes.indexOf(type) > -1} />
+                    <ListItemText primary={type} />
+                  </Box>
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <FormControl fullWidth size="small" sx={{ mb: 2 }}>
+            <InputLabel id="industries-label">Industries</InputLabel>
+            <Select
+              labelId="industries-label"
+              multiple
+              value={selectedIndustries}
+              label="Industries"
+              onChange={(e) => setSelectedIndustries(e.target.value)}
+              renderValue={(selected) =>
+                selected.length ? `${selected.length} selected` : "All"
+              }
+            >
+              {industries.map((ind) => (
+                <MenuItem key={ind} value={ind}>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <Checkbox checked={selectedIndustries.indexOf(ind) > -1} />
+                    <ListItemText primary={ind} />
+                  </Box>
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <FormControl fullWidth size="small" sx={{ mb: 2 }}>
+            <InputLabel id="locations-label">Locations</InputLabel>
+            <Select
+              labelId="locations-label"
+              multiple
+              value={selectedLocations}
+              label="Locations"
+              onChange={(e) => setSelectedLocations(e.target.value)}
+              renderValue={(selected) =>
+                selected.length ? `${selected.length} selected` : "All"
+              }
+            >
+              {cities.map((city) => (
+                <MenuItem key={city} value={city}>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <Checkbox checked={selectedLocations.indexOf(city) > -1} />
+                    <ListItemText primary={city} />
+                  </Box>
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <FormControlLabel
+            control={
+              <Switch
+                checked={remoteOnly}
+                onChange={(e) => setRemoteOnly(e.target.checked)}
+              />
+            }
+            label="Remote only"
+            sx={{ mb: 1 }}
+          />
+
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="body2" fontWeight={800} mb={0.5}>
+              Salary (min, optional)
+            </Typography>
+            <Slider
+              value={salaryMin}
+              min={0}
+              max={salaryMax}
+              step={5000}
+              onChange={(_, v) => setSalaryMin(v)}
+              disabled={!hasAnySalary}
+              aria-label="Minimum salary filter"
             />
-          );
-        })}
+            {!hasAnySalary && (
+              <Typography variant="caption" color="text.secondary">
+                Salary data isn’t available yet (UI only).
+              </Typography>
+            )}
+          </Box>
+
+          <Divider sx={{ my: 2 }} />
+
+          <Button fullWidth variant="outlined" onClick={clearFilters}>
+            Clear filters
+          </Button>
+        </Paper>
+
+        {/* Results */}
+        <Box>
+          {filteredJobs.length === 0 ? (
+            <Alert severity="info" sx={{ borderRadius: 3 }}>
+              No jobs match your filters. Try clearing filters or adjusting search.
+            </Alert>
+          ) : viewMode === "grid" ? (
+            <Grid container spacing={2}>
+              {visibleJobs.map((job) => {
+                const alreadyApplied =
+                  user?.role === "EMPLOYEE" && appliedJobs.includes(job.id);
+                return (
+                  <Grid item xs={12} md={6} key={job.id}>
+                    <JobCard
+                      job={job}
+                      onApply={
+                        alreadyApplied ? null : () => handleApplyClick(job.id)
+                      }
+                      isApplied={alreadyApplied}
+                      showApplyButton={
+                        user?.role !== "RECRUITER" && user?.role !== "ADMIN"
+                      }
+                      onViewCompany={() => handleViewCompany(job)}
+                    />
+                  </Grid>
+                );
+              })}
+
+              {isFetchingMore &&
+                visibleJobs.length < filteredJobs.length &&
+                Array.from({ length: 4 }).map((_, idx) => (
+                  <Grid item xs={12} md={6} key={`sk-${idx}`}>
+                    <Skeleton variant="rounded" height={210} />
+                  </Grid>
+                ))}
+            </Grid>
+          ) : (
+            <Stack spacing={2}>
+              {visibleJobs.map((job) => {
+                const alreadyApplied =
+                  user?.role === "EMPLOYEE" && appliedJobs.includes(job.id);
+                return (
+                  <JobCard
+                    key={job.id}
+                    job={job}
+                    onApply={
+                      alreadyApplied ? null : () => handleApplyClick(job.id)
+                    }
+                    isApplied={alreadyApplied}
+                    showApplyButton={
+                      user?.role !== "RECRUITER" && user?.role !== "ADMIN"
+                    }
+                    onViewCompany={() => handleViewCompany(job)}
+                  />
+                );
+              })}
+
+              {isFetchingMore &&
+                visibleJobs.length < filteredJobs.length &&
+                Array.from({ length: 4 }).map((_, idx) => (
+                  <Skeleton key={`sk-l-${idx}`} variant="rounded" height={220} />
+                ))}
+            </Stack>
+          )}
+
+          <Box ref={sentinelRef} sx={{ height: 1, mt: 2 }} aria-hidden="true" />
+        </Box>
+      </Box>
+
+      {/* Mobile filter drawer */}
+      <Drawer
+        anchor="left"
+        open={mobileFiltersOpen}
+        onClose={() => setMobileFiltersOpen(false)}
+      >
+        <Box sx={{ width: 320, p: 2 }}>
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <Typography variant="h6" fontWeight={900}>
+              Filters
+            </Typography>
+            <Button onClick={() => setMobileFiltersOpen(false)}>Done</Button>
+          </Box>
+
+          <TextField
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search jobs, companies, skills..."
+            label="Search"
+            fullWidth
+            size="small"
+            InputProps={{ startAdornment: <SearchIcon fontSize="small" sx={{ mr: 1 }} /> }}
+            sx={{ mt: 2, mb: 2 }}
+          />
+
+          <FormControl fullWidth size="small" sx={{ mb: 2 }}>
+            <InputLabel id="m-jobTypes-label">Job Types</InputLabel>
+            <Select
+              labelId="m-jobTypes-label"
+              multiple
+              value={selectedJobTypes}
+              label="Job Types"
+              onChange={(e) => setSelectedJobTypes(e.target.value)}
+              renderValue={(selected) =>
+                selected.length ? `${selected.length} selected` : "All"
+              }
+            >
+              {jobTypes.map((type) => (
+                <MenuItem key={type} value={type}>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <Checkbox checked={selectedJobTypes.indexOf(type) > -1} />
+                    <ListItemText primary={type} />
+                  </Box>
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <FormControl fullWidth size="small" sx={{ mb: 2 }}>
+            <InputLabel id="m-industries-label">Industries</InputLabel>
+            <Select
+              labelId="m-industries-label"
+              multiple
+              value={selectedIndustries}
+              label="Industries"
+              onChange={(e) => setSelectedIndustries(e.target.value)}
+              renderValue={(selected) =>
+                selected.length ? `${selected.length} selected` : "All"
+              }
+            >
+              {industries.map((ind) => (
+                <MenuItem key={ind} value={ind}>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <Checkbox checked={selectedIndustries.indexOf(ind) > -1} />
+                    <ListItemText primary={ind} />
+                  </Box>
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <FormControl fullWidth size="small" sx={{ mb: 2 }}>
+            <InputLabel id="m-locations-label">Locations</InputLabel>
+            <Select
+              labelId="m-locations-label"
+              multiple
+              value={selectedLocations}
+              label="Locations"
+              onChange={(e) => setSelectedLocations(e.target.value)}
+              renderValue={(selected) =>
+                selected.length ? `${selected.length} selected` : "All"
+              }
+            >
+              {cities.map((city) => (
+                <MenuItem key={city} value={city}>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <Checkbox checked={selectedLocations.indexOf(city) > -1} />
+                    <ListItemText primary={city} />
+                  </Box>
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <FormControlLabel
+            control={
+              <Switch
+                checked={remoteOnly}
+                onChange={(e) => setRemoteOnly(e.target.checked)}
+              />
+            }
+            label="Remote only"
+            sx={{ mb: 1 }}
+          />
+
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="body2" fontWeight={800} mb={0.5}>
+              Salary (min, optional)
+            </Typography>
+            <Slider
+              value={salaryMin}
+              min={0}
+              max={salaryMax}
+              step={5000}
+              onChange={(_, v) => setSalaryMin(v)}
+              disabled={!hasAnySalary}
+              aria-label="Minimum salary filter"
+            />
+          </Box>
+
+          <Button fullWidth variant="outlined" onClick={clearFilters} sx={{ mb: 2 }}>
+            Clear filters
+          </Button>
+        </Box>
+      </Drawer>
 
       {/* Cover Letter Dialog */}
       <Dialog open={openDialog} onClose={handleCloseDialog}>

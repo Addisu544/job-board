@@ -88,6 +88,7 @@ const RecruiterProfile = () => {
       await api.put("/profile/recruiter/me", form);
       alert("Company profile updated successfully");
     } catch (err) {
+      console.error(err);
       alert("Failed to update company profile");
     } finally {
       setSaving(false);

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Container,
   TextField,
@@ -11,6 +11,15 @@ import {
   Select,
   MenuItem,
   Chip,
+  Stepper,
+  Step,
+  StepLabel,
+  LinearProgress,
+  Snackbar,
+  Stack,
+  Paper,
+  Autocomplete,
+  Alert,
 } from "@mui/material";
 import api from "../../services/api";
 import { skillsList } from "../../data/skills";
@@ -48,6 +57,14 @@ const EmployeeProfile = () => {
     cvPath: "",
   });
   const [cvFile, setCvFile] = useState(null);
+  const [activeStep, setActiveStep] = useState(0);
+  const [dragActive, setDragActive] = useState(false);
+  const fileInputRef = useRef(null);
+  const [toast, setToast] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -99,20 +116,6 @@ const EmployeeProfile = () => {
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  const handleAddSkill = (skill) => {
-    if (form.skills.length >= 5) return;
-    if (!form.skills.includes(skill)) {
-      setForm({ ...form, skills: [...form.skills, skill] });
-    }
-  };
-
-  const handleRemoveSkill = (skill) => {
-    setForm({
-      ...form,
-      skills: form.skills.filter((s) => s !== skill),
-    });
   };
 
   const handleAddLanguage = (lang) => {
@@ -196,13 +199,73 @@ const EmployeeProfile = () => {
         },
       });
 
-      alert("Profile updated successfully");
+      setToast({
+        open: true,
+        message: "Profile updated successfully.",
+        severity: "success",
+      });
     } catch (err) {
       console.log(err);
-      alert("Failed to update profile");
+      setToast({
+        open: true,
+        message: "Failed to update profile. Please try again.",
+        severity: "error",
+      });
     } finally {
       setSaving(false);
     }
+  };
+
+  const completeness = useMemo(() => {
+    const total = 6;
+    const filled = [
+      Boolean(form.title?.trim()),
+      Boolean(form.bio?.trim()),
+      form.skills?.length > 0,
+      Boolean(form.experience?.trim()),
+      Boolean(form.education?.trim()),
+      Boolean(cvFile || form.cvPath),
+    ].filter(Boolean).length;
+
+    return Math.round((filled / total) * 100);
+  }, [cvFile, form.bio, form.education, form.experience, form.cvPath, form.skills, form.title]);
+
+  const openFilePicker = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleCvFile = (file) => {
+    if (!file) return;
+    // Backend currently expects a CV upload under `cv` (multipart). Keep PDF-only UX.
+    if (file.type !== "application/pdf") {
+      setToast({
+        open: true,
+        message: "Please upload a PDF CV.",
+        severity: "error",
+      });
+      return;
+    }
+    setCvFile(file);
+  };
+
+  const handleCvDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    const file = e.dataTransfer?.files?.[0];
+    handleCvFile(file);
+  };
+
+  const handleCvDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(true);
+  };
+
+  const handleCvDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
   };
 
   if (loading) {
@@ -214,194 +277,310 @@ const EmployeeProfile = () => {
   }
 
   return (
-    <Container maxWidth="sm" sx={{ mt: 5 }}>
-      <Typography variant="h4" mb={1}>
-        {userInfo.fullName}
-      </Typography>
+    <Container maxWidth="md" sx={{ mt: 5 }}>
+      <Box mb={3}>
+        <Typography variant="h4" mb={1}>
+          {userInfo.fullName}
+        </Typography>
 
-      <Typography variant="body2" color="text.secondary" mb={3}>
-        {userInfo.email}
-      </Typography>
+        <Typography variant="body2" color="text.secondary" mb={2}>
+          {userInfo.email}
+        </Typography>
 
-      <TextField
-        label="Title"
-        name="title"
-        fullWidth
-        margin="normal"
-        value={form.title}
-        onChange={handleChange}
-      />
-
-      <TextField
-        label="Bio"
-        name="bio"
-        fullWidth
-        margin="normal"
-        multiline
-        rows={2}
-        value={form.bio}
-        onChange={handleChange}
-      />
-      <Box>
-        <input
-          type="file"
-          accept="application/pdf"
-          onChange={(e) => setCvFile(e.target.files[0])}
+        <Typography variant="body2" fontWeight={800} mb={1}>
+          Profile completeness: {completeness}%
+        </Typography>
+        <LinearProgress
+          variant="determinate"
+          value={completeness}
+          sx={{ height: 10, borderRadius: 999 }}
         />
-        {form.cvPath && (
-          <Box mt={2}>
-            <a
-              href={`http://localhost:5000${form.cvPath}`}
-              target="_blank"
-              rel="noopener noreferrer"
+
+        <Stepper activeStep={activeStep} alternativeLabel sx={{ mt: 2 }}>
+          <Step>
+            <StepLabel>Personal info</StepLabel>
+          </Step>
+          <Step>
+            <StepLabel>Skills & experience</StepLabel>
+          </Step>
+        </Stepper>
+      </Box>
+
+      {activeStep === 0 && (
+        <Box>
+          <TextField
+            label="Title"
+            name="title"
+            fullWidth
+            margin="normal"
+            value={form.title}
+            onChange={handleChange}
+          />
+
+          <TextField
+            label="Bio"
+            name="bio"
+            fullWidth
+            margin="normal"
+            multiline
+            rows={2}
+            value={form.bio}
+            onChange={handleChange}
+          />
+
+          <Paper
+            variant="outlined"
+            onDrop={handleCvDrop}
+            onDragOver={handleCvDragOver}
+            onDragLeave={handleCvDragLeave}
+            onClick={openFilePicker}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") openFilePicker();
+            }}
+            sx={(theme) => ({
+              mt: 2.5,
+              p: 2.5,
+              borderRadius: 4,
+              borderStyle: "dashed",
+              borderWidth: 2,
+              borderColor: dragActive
+                ? "primary.main"
+                : theme.palette.divider,
+              cursor: "pointer",
+              userSelect: "none",
+              backgroundColor: theme.palette.action.hover,
+              transition: "border-color 160ms ease, background-color 160ms ease",
+            })}
+            aria-label="Upload CV (PDF) via drag and drop"
+          >
+            <Typography variant="subtitle1" fontWeight={900}>
+              Drag & drop your CV (PDF)
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Or click to browse.
+            </Typography>
+
+            {cvFile ? (
+              <Typography mt={1} variant="body2">
+                Selected: {cvFile.name}
+              </Typography>
+            ) : null}
+
+            {form.cvPath ? (
+              <Box mt={1.5}>
+                <a
+                  href={`http://localhost:5000${form.cvPath}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  View Current CV
+                </a>
+              </Box>
+            ) : null}
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="application/pdf"
+              hidden
+              onChange={(e) => handleCvFile(e.target.files?.[0])}
+            />
+          </Paper>
+
+          <TextField
+            label="LinkedIn URL"
+            name="linkedin"
+            fullWidth
+            margin="normal"
+            value={form.linkedin}
+            onChange={handleChange}
+          />
+
+          <TextField
+            label="Telegram URL"
+            name="telegram"
+            fullWidth
+            margin="normal"
+            value={form.telegram}
+            onChange={handleChange}
+          />
+
+          <TextField
+            label="GitHub URL"
+            name="github"
+            fullWidth
+            margin="normal"
+            value={form.github}
+            onChange={handleChange}
+          />
+
+          <TextField
+            label="Portfolio URL"
+            name="portfolio"
+            fullWidth
+            margin="normal"
+            value={form.portfolio}
+            onChange={handleChange}
+          />
+
+          <TextField
+            label="Availability"
+            name="availability"
+            fullWidth
+            margin="normal"
+            value={form.availability}
+            onChange={handleChange}
+          />
+        </Box>
+      )}
+
+      {activeStep === 1 && (
+        <Box>
+          <Autocomplete
+            multiple
+            options={skillsList}
+            value={form.skills}
+            disableCloseOnSelect
+            onChange={(_, newValue) => {
+              setForm((prev) => ({
+                ...prev,
+                skills: newValue.slice(0, 5),
+              }));
+            }}
+            getOptionLabel={(option) => option}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Skills (max 5)"
+                margin="normal"
+              />
+            )}
+            renderTags={(value, getTagProps) =>
+              value.map((option, index) => (
+                <Chip
+                  label={option}
+                  size="small"
+                  {...getTagProps({ index })}
+                  key={option}
+                  sx={{ m: 0.5 }}
+                />
+              ))
+            }
+          />
+
+          <FormControl fullWidth margin="normal">
+            <InputLabel>Languages</InputLabel>
+            <Select
+              value=""
+              label="Languages"
+              onChange={(e) => handleAddLanguage(e.target.value)}
             >
-              View Current CV
-            </a>
+              {languagesList.map((lang) => (
+                <MenuItem key={lang} value={lang}>
+                  {lang}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <Box sx={{ mt: 1 }}>
+            {form.languages.map((lang) => (
+              <Chip
+                key={lang}
+                label={lang}
+                onDelete={() => handleRemoveLanguage(lang)}
+                sx={{ m: 0.5 }}
+              />
+            ))}
           </Box>
-        )}
-      </Box>
 
-      <FormControl fullWidth margin="normal">
-        <InputLabel>Skills (max 5)</InputLabel>
-        <Select
-          value=""
-          label="Skills (max 5)"
-          onChange={(e) => handleAddSkill(e.target.value)}
-        >
-          {skillsList.map((skill) => (
-            <MenuItem key={skill} value={skill}>
-              {skill}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-
-      <Box sx={{ mt: 1 }}>
-        {form.skills.map((skill) => (
-          <Chip
-            key={skill}
-            label={skill}
-            onDelete={() => handleRemoveSkill(skill)}
-            sx={{ m: 0.5 }}
+          <TextField
+            label="Brief explanation of your Experience"
+            name="experience"
+            fullWidth
+            margin="normal"
+            multiline
+            rows={3}
+            value={form.experience}
+            onChange={handleChange}
           />
-        ))}
-      </Box>
 
-      <FormControl fullWidth margin="normal">
-        <InputLabel>Languages</InputLabel>
-        <Select
-          value=""
-          label="Languages"
-          onChange={(e) => handleAddLanguage(e.target.value)}
-        >
-          {languagesList.map((lang) => (
-            <MenuItem key={lang} value={lang}>
-              {lang}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-
-      <Box sx={{ mt: 1 }}>
-        {form.languages.map((lang) => (
-          <Chip
-            key={lang}
-            label={lang}
-            onDelete={() => handleRemoveLanguage(lang)}
-            sx={{ m: 0.5 }}
+          <TextField
+            label="Education"
+            name="education"
+            fullWidth
+            margin="normal"
+            value={form.education}
+            onChange={handleChange}
           />
-        ))}
-      </Box>
 
-      <TextField
-        label="Brief explanation of your Experience"
-        name="experience"
-        fullWidth
-        margin="normal"
-        multiline
-        rows={3}
-        value={form.experience}
-        onChange={handleChange}
-      />
+          <FormControl fullWidth margin="normal">
+            <InputLabel>Education Level</InputLabel>
+            <Select
+              name="level"
+              value={form.level}
+              label="Education Level"
+              onChange={handleChange}
+            >
+              {educationLevels.map((level) => (
+                <MenuItem key={level} value={level}>
+                  {level}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Box>
+      )}
 
-      <TextField
-        label="Education"
-        name="education"
-        fullWidth
-        margin="normal"
-        value={form.education}
-        onChange={handleChange}
-      />
-
-      <FormControl fullWidth margin="normal">
-        <InputLabel>Education Level</InputLabel>
-        <Select
-          name="level"
-          value={form.level}
-          label="Education Level"
-          onChange={handleChange}
-        >
-          {educationLevels.map((level) => (
-            <MenuItem key={level} value={level}>
-              {level}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-
-      <TextField
-        label="LinkedIn URL"
-        name="linkedin"
-        fullWidth
-        margin="normal"
-        value={form.linkedin}
-        onChange={handleChange}
-      />
-
-      <TextField
-        label="Telegram URL"
-        name="telegram"
-        fullWidth
-        margin="normal"
-        value={form.telegram}
-        onChange={handleChange}
-      />
-
-      <TextField
-        label="GitHub URL"
-        name="github"
-        fullWidth
-        margin="normal"
-        value={form.github}
-        onChange={handleChange}
-      />
-
-      <TextField
-        label="Portfolio URL"
-        name="portfolio"
-        fullWidth
-        margin="normal"
-        value={form.portfolio}
-        onChange={handleChange}
-      />
-
-      <TextField
-        label="Availability"
-        name="availability"
-        fullWidth
-        margin="normal"
-        value={form.availability}
-        onChange={handleChange}
-      />
-      <Button
-        variant="contained"
-        fullWidth
+      <Stack
+        direction="row"
+        spacing={2}
+        justifyContent="space-between"
         sx={{ mt: 3 }}
-        onClick={handleSubmit}
-        disabled={saving}
       >
-        {saving ? "Saving..." : "Save Profile"}
-      </Button>
+        <Button
+          variant="outlined"
+          disabled={activeStep === 0 || saving}
+          onClick={() => setActiveStep((s) => Math.max(0, s - 1))}
+        >
+          Back
+        </Button>
+
+        {activeStep === 0 ? (
+          <Button
+            variant="contained"
+            onClick={() => setActiveStep(1)}
+            disabled={saving}
+          >
+            Next
+          </Button>
+        ) : (
+          <Button
+            variant="contained"
+            onClick={handleSubmit}
+            disabled={saving}
+          >
+            {saving ? "Saving..." : "Save Profile"}
+          </Button>
+        )}
+      </Stack>
+
+      <Snackbar
+        open={toast.open}
+        autoHideDuration={4500}
+        onClose={() => setToast((t) => ({ ...t, open: false }))}
+      >
+        <Alert
+          onClose={() => setToast((t) => ({ ...t, open: false }))}
+          severity={toast.severity}
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          {toast.message}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };

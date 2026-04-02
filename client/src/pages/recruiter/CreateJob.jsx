@@ -19,7 +19,6 @@ import { skillsList } from "../../data/skills";
 import { cities } from "../../data/cities";
 import { countries } from "../../data/countries";
 import api from "../../services/api";
-import { useNavigate } from "react-router-dom";
 const CreateJob = () => {
   // const [form, setForm] = useState({
   //   title: "",
@@ -41,8 +40,6 @@ const CreateJob = () => {
   const [form, setForm] = useState(initialForm);
 
   const [companyProfileComplete, setCompanyProfileComplete] = useState(true);
-  const [loadingProfile, setLoadingProfile] = useState(true);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchCompanyProfile = async () => {
@@ -56,7 +53,7 @@ const CreateJob = () => {
       } catch (err) {
         console.error(err);
       } finally {
-        setLoadingProfile(false);
+        // no-op: keep UI simple without additional loading state
       }
     };
 

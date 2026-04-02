@@ -35,6 +35,7 @@
 //   return context;
 // }
 
+/* eslint react-refresh/only-export-components: "off" */
 import { createContext, useContext, useState, useEffect } from "react";
 
 const AuthContext = createContext(undefined);
