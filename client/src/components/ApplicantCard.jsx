@@ -1,21 +1,24 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
-  Card,
-  CardContent,
-  Typography,
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   Box,
-  Select,
-  MenuItem,
+  Button,
+  Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   FormControl,
   InputLabel,
-  Chip,
+  MenuItem,
+  Select,
+  Skeleton,
+  Stack,
+  TableCell,
+  TableRow,
+  Typography,
 } from "@mui/material";
 import api from "../services/api";
+import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
 
 const STATUS_OPTIONS = ["PENDING", "SHORTLISTED", "PASSED", "DECLINED"];
 
@@ -25,6 +28,26 @@ const ApplicantCard = ({ application, jobId, onStatusChange }) => {
   const [status, setStatus] = useState(application.status);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const statusMeta = useMemo(() => {
+    switch (status) {
+      case "PENDING":
+        return { label: "Pending", chipColor: "info" };
+      case "SHORTLISTED":
+        return { label: "Interview", chipColor: "warning" };
+      case "PASSED":
+        return { label: "Offer", chipColor: "success" };
+      case "DECLINED":
+        return { label: "Rejected", chipColor: "error" };
+      default:
+        return { label: status, chipColor: "default" };
+    }
+  }, [status]);
+
+  const cvUrl = useMemo(() => {
+    if (!employee?.cvPath) return "";
+    return `http://localhost:5000${employee.cvPath}`;
+  }, [employee?.cvPath]);
 
   // 🔁 handle dropdown change
   const handleChangeStatus = async (event) => {
@@ -46,22 +69,24 @@ const ApplicantCard = ({ application, jobId, onStatusChange }) => {
       setLoading(false);
     }
   };
-  const formatUrl = (url) => {
-    if (!url) return "";
-    if (url.startsWith("http")) return url;
-    return `https://${url}`;
-  };
   return (
     <>
-      <Card sx={{ mb: 2 }}>
-        <CardContent>
-          <Typography variant="h6">{employee.user.fullName}</Typography>
+      <TableRow hover>
+        <TableCell sx={{ minWidth: 240 }}>
+          <Stack spacing={0.5}>
+            <Typography fontWeight={900}>
+              {employee?.user?.fullName || "Unknown"}
+            </Typography>
+            <Typography variant="body2" color="text.secondary" noWrap>
+              {employee?.user?.email || "—"}
+            </Typography>
+          </Stack>
+        </TableCell>
 
-          <Typography>Email: {employee.user.email}</Typography>
-
-          {/* ✅ STATUS DROPDOWN */}
-          <Box mt={2}>
-            <FormControl size="small" fullWidth>
+        <TableCell sx={{ minWidth: 190 }}>
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Chip size="small" label={statusMeta.label} color={statusMeta.chipColor} />
+            <FormControl size="small" sx={{ minWidth: 140 }}>
               <InputLabel>Status</InputLabel>
               <Select
                 value={status}
@@ -76,154 +101,128 @@ const ApplicantCard = ({ application, jobId, onStatusChange }) => {
                 ))}
               </Select>
             </FormControl>
-          </Box>
+          </Stack>
+        </TableCell>
 
-          <Typography mt={2} fontWeight="bold">
-            Cover Letter
-          </Typography>
-          <Typography>{coverLetter}</Typography>
-
-          <Box mt={2}>
-            <Button variant="outlined" onClick={() => setOpen(true)}>
-              Applicant Info
+        <TableCell sx={{ minWidth: 270 }}>
+          <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={() => setOpen(true)}
+              disabled={loading}
+              startIcon={<DescriptionOutlinedIcon />}
+            >
+              Details
             </Button>
-          </Box>
-        </CardContent>
-      </Card>
 
-      {/* Applicant Profile Dialog */}
-      <Dialog
-        open={open}
-        onClose={() => setOpen(false)}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle>Applicant Profile</DialogTitle>
+            <Button
+              variant="text"
+              size="small"
+              disabled={!cvUrl}
+              component={cvUrl ? "a" : "button"}
+              href={cvUrl || undefined}
+              target="_blank"
+              rel="noreferrer"
+            >
+              {cvUrl ? "Preview" : "CV missing"}
+            </Button>
 
+            <Button
+              variant="text"
+              size="small"
+              disabled={!cvUrl}
+              component={cvUrl ? "a" : "button"}
+              href={cvUrl || undefined}
+              download
+            >
+              Download
+            </Button>
+          </Stack>
+        </TableCell>
+      </TableRow>
+
+      {/* Applicant profile dialog */}
+      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Applicant Info</DialogTitle>
         <DialogContent dividers>
-          {/* BASIC INFO */}
-          <Typography fontWeight="bold">Full Name</Typography>
-          <Typography mb={2}>{employee.user.fullName}</Typography>
+          {employee ? (
+            <Stack spacing={1.5}>
+              <Typography variant="h6" fontWeight={900}>
+                {employee?.user?.fullName || "Unknown"}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {employee?.user?.email || "—"}
+              </Typography>
 
-          <Typography fontWeight="bold">Email</Typography>
-          <Typography mb={2}>{employee.user.email}</Typography>
+              <Box>
+                <Typography fontWeight={900} mb={0.5}>
+                  Title
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {employee.title || "Not provided"}
+                </Typography>
+              </Box>
 
-          <Typography fontWeight="bold">Title</Typography>
-          <Typography mb={2}>{employee.title || "Not provided"}</Typography>
+              <Box>
+                <Typography fontWeight={900} mb={0.5}>
+                  Bio
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: "pre-wrap" }}>
+                  {employee.bio || "Not provided"}
+                </Typography>
+              </Box>
 
-          <Typography fontWeight="bold">Bio</Typography>
-          <Typography mb={2}>{employee.bio || "Not provided"}</Typography>
+              <Box>
+                <Typography fontWeight={900} mb={0.5}>
+                  Skills
+                </Typography>
+                {employee.skills ? (
+                  <Stack direction="row" spacing={1} flexWrap="wrap">
+                    {employee.skills
+                      .split(",")
+                      .map((skill) => skill.trim())
+                      .filter(Boolean)
+                      .slice(0, 12)
+                      .map((skill) => (
+                        <Chip key={skill} size="small" label={skill} sx={{ mb: 0.5 }} />
+                      ))}
+                  </Stack>
+                ) : (
+                  <Typography variant="body2" color="text.secondary">
+                    Not provided
+                  </Typography>
+                )}
+              </Box>
 
-          {/* SKILLS */}
-          <Typography fontWeight="bold">Skills</Typography>
-          <Box mb={2}>
-            {employee.skills
-              ? employee.skills
-                  .split(",")
-                  .map((skill) => (
-                    <Chip key={skill} label={skill} sx={{ m: 0.5 }} />
-                  ))
-              : "Not provided"}
-          </Box>
+              <Box>
+                <Typography fontWeight={900} mb={0.5}>
+                  Cover letter
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: "pre-wrap" }}>
+                  {coverLetter || "—"}
+                </Typography>
+              </Box>
 
-          {/* EXPERIENCE */}
-          <Typography fontWeight="bold">Experience</Typography>
-          <Typography mb={2}>
-            {employee.experience || "Not provided"}
-          </Typography>
-
-          {/* EDUCATION */}
-          <Typography fontWeight="bold">Education</Typography>
-          <Typography mb={2}>{employee.education || "Not provided"}</Typography>
-
-          <Typography fontWeight="bold">Level</Typography>
-          <Typography mb={2}>{employee.level || "Not provided"}</Typography>
-
-          {/* LINKS */}
-          <Typography fontWeight="bold">LinkedIn</Typography>
-          <Typography mb={2}>
-            {employee.linkedin ? (
-              <a
-                href={formatUrl(employee.linkedin)}
-                target="_blank"
-                rel="noreferrer"
-              >
-                {employee.linkedin}
-              </a>
-            ) : (
-              "Not provided"
-            )}
-          </Typography>
-
-          <Typography fontWeight="bold">GitHub</Typography>
-          <Typography mb={2}>
-            {employee.github ? (
-              <a
-                href={formatUrl(employee.github)}
-                target="_blank"
-                rel="noreferrer"
-              >
-                {employee.github}
-              </a>
-            ) : (
-              "Not provided"
-            )}
-          </Typography>
-
-          <Typography fontWeight="bold">Portfolio</Typography>
-          <Typography mb={2}>
-            {employee.portfolio ? (
-              <a
-                href={formatUrl(employee.portfolio)}
-                target="_blank"
-                rel="noreferrer"
-              >
-                {employee.portfolio}
-              </a>
-            ) : (
-              "Not provided"
-            )}
-          </Typography>
-
-          <Typography fontWeight="bold">Telegram</Typography>
-          <Typography mb={2}>{employee.telegram || "Not provided"}</Typography>
-          <Typography fontWeight="bold">Telegram</Typography>
-          <Typography mb={2}>
-            {employee.portfolio ? (
-              <a
-                href={formatUrl(employee.telegram)}
-                target="_blank"
-                rel="noreferrer"
-              >
-                {employee.telegram}
-              </a>
-            ) : (
-              "Not provided"
-            )}
-          </Typography>
-          {/* AVAILABILITY */}
-          <Typography fontWeight="bold">Availability</Typography>
-          <Typography mb={2}>
-            {employee.availability || "Not provided"}
-          </Typography>
-
-          {/* CV DOWNLOAD */}
-          <Typography fontWeight="bold">CV</Typography>
-          <Typography>
-            {employee.cvPath ? (
-              <a
-                href={`http://localhost:5000${employee.cvPath}`}
-                target="_blank"
-                rel="noreferrer"
-              >
-                View CV
-              </a>
-            ) : (
-              "Not uploaded"
-            )}
-          </Typography>
+              <Box>
+                <Typography fontWeight={900} mb={0.5}>
+                  CV
+                </Typography>
+                {cvUrl ? (
+                  <Button variant="outlined" size="small" component="a" href={cvUrl} target="_blank" rel="noreferrer">
+                    View CV
+                  </Button>
+                ) : (
+                  <Typography variant="body2" color="text.secondary">
+                    Not uploaded
+                  </Typography>
+                )}
+              </Box>
+            </Stack>
+          ) : (
+            <Skeleton variant="rounded" height={220} />
+          )}
         </DialogContent>
-
         <DialogActions>
           <Button onClick={() => setOpen(false)}>Close</Button>
         </DialogActions>

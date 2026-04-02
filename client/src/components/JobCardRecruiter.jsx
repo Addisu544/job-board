@@ -34,8 +34,9 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Box,
   Chip,
+  Stack,
+  Box,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api"; // adjust path if needed
@@ -45,9 +46,11 @@ const JobCardRecruiter = ({ job, onStatusChange }) => {
   const [openConfirm, setOpenConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  //  get applications count
-  const applicationsCount =
-    job.applications?.length ?? job._count?.applications ?? 0;
+  const applicationsCount = job.applications?.length ?? job._count?.applications ?? 0;
+  const isOpen = job.status === "OPEN";
+
+  const statusLabel = isOpen ? "Open" : "Closed";
+  const statusChip = isOpen ? "success" : "default";
 
   const handleCloseJob = async () => {
     try {
@@ -57,8 +60,8 @@ const JobCardRecruiter = ({ job, onStatusChange }) => {
         status: "CLOSED",
       });
 
-      // 🔥 update parent state
-      onStatusChange(job.id, "CLOSED");
+      // API marks the job as HIRED; use returned status if available.
+      onStatusChange(job.id, "HIRED");
 
       setOpenConfirm(false);
     } catch (err) {
@@ -71,52 +74,67 @@ const JobCardRecruiter = ({ job, onStatusChange }) => {
 
   return (
     <>
-      <Card sx={{ mb: 2 }}>
+      <Card
+        elevation={0}
+        sx={(theme) => ({
+          mb: 2,
+          borderRadius: 4,
+          border: "1px solid",
+          borderColor: "divider",
+          background:
+            theme.palette.mode === "light"
+              ? "rgba(255,255,255,0.7)"
+              : "rgba(17,28,52,0.65)",
+          backdropFilter: "blur(10px)",
+          transition: "transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease",
+          "&:hover": {
+            transform: "translateY(-2px)",
+            boxShadow: theme.shadows[8],
+            borderColor: theme.palette.primary.main,
+          },
+        })}
+      >
         <CardContent>
-          <Typography variant="h6">{job.title}</Typography>
+          <Stack direction="row" justifyContent="space-between" spacing={2}>
+            <Box sx={{ minWidth: 0 }}>
+              <Typography variant="h6" fontWeight={900} noWrap>
+                {job.title}
+              </Typography>
+              <Typography variant="body2" color="text.secondary" noWrap>
+                {(job.city && job.country) ? `${job.city}, ${job.country}` : job.city || job.country || "Location not listed"}
+              </Typography>
+            </Box>
 
-          <Typography
-            sx={{
-              color:
-                job.status === "OPEN"
-                  ? "green"
-                  : job.status === "CLOSED"
-                    ? "red"
-                    : "gray",
-              fontWeight: "bold",
-            }}
-          >
-            Status: {job.status}
-          </Typography>
+            <Chip size="small" label={statusLabel} color={statusChip} variant={isOpen ? "filled" : "outlined"} />
+          </Stack>
 
-          {/*Applications Count */}
-          <Box sx={{ mt: 1 }}>
-            <Chip
-              label={`Applications: ${applicationsCount}`}
-              color="primary"
-              variant="outlined"
-            />
-          </Box>
+          <Stack direction="row" spacing={1.5} mt={1} flexWrap="wrap" alignItems="center">
+            <Chip size="small" variant="outlined" label={`Applications: ${applicationsCount}`} />
+            {job.jobType && <Chip size="small" variant="outlined" label={job.jobType} />}
+            {job.workMode && <Chip size="small" variant="outlined" label={job.workMode} />}
+          </Stack>
 
-          <Box sx={{ mt: 2, display: "flex", gap: 2 }}>
+          <Stack direction="row" spacing={1} mt={2} flexWrap="wrap" alignItems="center">
             <Button
               variant="outlined"
               onClick={() => navigate(`/recruiter/jobs/${job.id}/applications`)}
+              sx={{ borderRadius: 2, textTransform: "none" }}
             >
               View Applicants
             </Button>
 
-            {/* ✅ Close button ONLY when OPEN */}
-            {job.status === "OPEN" && (
+            {isOpen && (
               <Button
                 variant="contained"
                 color="error"
                 onClick={() => setOpenConfirm(true)}
+                disabled={loading}
+                sx={{ borderRadius: 2, textTransform: "none" }}
               >
-                Close Job
+                {loading ? "Closing..." : "Close Job"}
               </Button>
             )}
-          </Box>
+          </Stack>
         </CardContent>
       </Card>
 
